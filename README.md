@@ -126,10 +126,17 @@ Linux의 chmod 명령어를 이용하여 파일과 디렉터리의 권한을 설
 | permission-dir | 755 (drwxr-xr-x) | chmod 755 permission-dir | 755 (drwxr-xr-x) |
 
 ※ 실습 당시 기본 생성 권한이 이미 644와 755였으므로 변경 전후 권한 비트에는 차이가 없었다.
+아래는 변경 전후를 확인하는 재현 절차다. 평가 증거로 제출할 때는 실습 터미널에서 실행한 실제 출력을 추가한다.
 
 권한 확인 명령어:
 
 ```bash
+stat -c '%a %A %n' permission-test.txt permission-dir  # chmod 실행 전 출력 저장
+chmod 600 permission-test.txt  # 소유자만 읽고 쓰도록 바꿔 권한 차이를 확인한다.
+chmod 700 permission-dir  # 소유자만 디렉터리에 접근하도록 바꾼다.
+stat -c '%a %A %n' permission-test.txt permission-dir  # chmod 실행 후 출력 저장
+chmod 644 permission-test.txt  # 실습에서 사용한 파일 권한으로 복구한다.
+chmod 755 permission-dir  # 실습에서 사용한 디렉터리 권한으로 복구한다.
 stat -c '%a %A %n' permission-test.txt permission-dir
 # 명령어: stat은 파일 정보를 출력한다. -c는 형식을 지정하며 %a/%A/%n은 숫자 권한/문자 권한/이름이다.
 # 사용 이유: chmod로 설정한 파일과 디렉터리의 권한을 확인한다.
@@ -159,6 +166,8 @@ docker ps -a
 # 사용 이유: 기존 컨테이너의 실행 및 종료 상태를 확인한다.
 ```
 
+위 명령을 실행한 터미널의 원문 출력은 환경별로 달라진다. 평가 증거에는 `docker version`, `docker info`, `docker images`, `docker ps -a`의 실제 출력 또는 화면 캡처를 첨부한다. 현재 README의 버전·상태 요약은 원문 출력을 대신하지 않는다.
+
 확인 결과:
 - Docker Client 정상 작동
 - Docker Engine 정상 연결
@@ -171,6 +180,8 @@ docker ps -a
 ```bash
 docker run hello-world  # 명령어: docker run은 이미지로 컨테이너를 만들고 실행한다. hello-world로 Docker 실행을 검증한다.
 ```
+
+평가 증거로는 이 명령을 실제 실행해 `Hello from Docker!`가 표시된 전체 터미널 출력을 첨부한다. 아래 실행 결과는 출력 요약이며 원문 로그가 아니다.
 
 실행 결과:
 - hello-world 이미지 다운로드 확인
@@ -197,7 +208,7 @@ cat /etc/os-release  # 사용 이유: 컨테이너의 Ubuntu 배포판 정보를
 exit  # 명령어: exit은 현재 셸 세션을 종료한다. 대화형 컨테이너 셸에서 빠져나온다.
 ```
 
-※ 내부 명령 실행 결과는 추가 확인 후 기록한다.
+※ 내부 명령 실행 결과는 추가 확인 후 원문을 기록한다. 재현 증거를 남길 때는 `pwd`, `ls -la`, `cat /etc/os-release` 출력도 캡처한다.
 
 ### 5.4 Docker 이미지 및 컨테이너 관리
 
@@ -247,6 +258,8 @@ codisey1/
         └── index.html
 ```
 
+`docker-web/`은 Dockerfile과 정적 웹 콘텐츠를 함께 두어 이미지 빌드 입력을 명확히 관리한다. `docker-web-bind/`는 바인드 마운트로 호스트에서 수정할 HTML을 이미지 빌드 파일과 분리한다. `images/`는 실습 화면 증거를 README에서 재사용할 수 있도록 모아 둔다.
+
 Dockerfile:
 
 ```dockerfile
@@ -285,6 +298,8 @@ docker images  # 사용 이유: 빌드한 이미지가 로컬에 생성됐는지
 - 빌드 결과: FINISHED
 - 이미지 ID: 8d08f8308974
 - 이미지 크기: 약 93.7MB
+
+위 내용은 빌드 결과 요약이다. 평가 증거로는 `docker build -t codyssey-web:v1 .`을 실제 실행한 전체 콘솔 로그를 첨부한다.
 
 ### 6.3 컨테이너 실행
 
@@ -332,7 +347,22 @@ Docker 실행 시 `-p 8080:80` 옵션을 적용하여 호스트와 컨테이너�
 | 컨테이너 포트 | 80 |
 | 웹 서버 | NGINX |
 
-### 7.2 웹 서버 접속 검증
+### 7.2 단계별 재현 절차
+
+저장소 루트에서 다음 순서로 빌드, 실행, 접속 상태를 확인한다.
+
+```bash
+cd docker-web
+docker build -t codyssey-web:v1 .
+docker run -d --name codyssey-web -p 8080:80 codyssey-web:v1
+docker ps --filter name=codyssey-web
+curl -i http://localhost:8080
+docker logs codyssey-web
+```
+
+이미지가 바뀐 뒤에는 새 태그로 다시 빌드하고 기존 컨테이너를 교체해 새 이미지를 실행한다. 예를 들어 Dockerfile 또는 HTML을 수정한 다음 `docker build -t codyssey-web:v2 .`, `docker rm -f codyssey-web`, `docker run -d --name codyssey-web -p 8080:80 codyssey-web:v2` 순서로 배포하고 `curl -i http://localhost:8080`으로 새 응답을 확인한다.
+
+### 7.3 웹 서버 접속 검증
 
 실행 명령어:
 
@@ -354,9 +384,11 @@ curl http://localhost:8080  # 명령어: curl은 URL에 HTTP 요청을 보내고
 
 이를 통해 Docker 컨테이너 내부의 NGINX 웹 서버가 호스트의 8080번 포트를 통해 정상적으로 응답하는 것을 확인하였다.
 
-※ 브라우저 접속 화면은 별도 캡처 후 증거 자료에 추가한다.
+평가 증거에는 `curl -i http://localhost:8080`의 실제 응답 헤더와 본문을 추가한다. 브라우저 캡처는 [docker-web-browser.png](./images/docker-web-browser.png)다.
 
-### 7.3 브라우저 접속 검증
+브라우저 접속 화면은 아래 캡처 파일로 첨부하였다.
+
+### 7.4 브라우저 접속 검증
 
 Windows 웹 브라우저에서 `http://localhost:8080`에 접속하여 사용자 정의 HTML 페이지가 정상적으로 표시되는 것을 확인하였다.
 
@@ -405,6 +437,8 @@ curl http://localhost:8081  # 사용 이유: 호스트 파일의 수정 내용�
 - RW: `false`
 - HTML 파일의 BEFORE → AFTER 변경 사항 반영 확인
 
+Bind Mount는 호스트에서 수정한 파일이 즉시 반영되어 개발 중 편집이 쉽지만, 호스트 경로와 권한에 의존한다. 소스·설정 파일을 개발 중 공유할 때 적합하다. Docker Volume은 Docker가 저장 위치를 관리해 컨테이너 수명과 데이터를 분리하기 쉽고 호스트의 특정 디렉터리 구조에 덜 의존한다. 데이터베이스나 업로드 데이터처럼 컨테이너 교체 뒤에도 보존할 데이터에 권장한다.
+
 #### 8.2 Docker Volume 실습
 
 - Docker Volume 생성
@@ -433,6 +467,8 @@ cd /data  # 사용 이유: 볼륨 마운트 경로로 이동한다.
 echo "Docker Volume 데이터 보존 실습 성공!" > test.txt  # 사용 이유: 확인할 텍스트를 볼륨에 기록한다. >는 파일을 새로 만들거나 기존 내용을 덮어쓴다.
 cat test.txt  # 사용 이유: 기록된 내용을 확인한다.
 ```
+
+실제 증거에는 첫 컨테이너에서 `cat test.txt`가 출력한 내용과, 컨테이너 삭제 후 새 컨테이너에서 실행한 `ls -l`, `cat test.txt`, 호스트에서 실행한 `docker volume inspect codyssey-data`의 원문 출력을 첨부한다.
 
 **컨테이너 삭제 및 데이터 검증**
 
@@ -481,7 +517,16 @@ git remote -v  # 명령어: git remote -v는 원격 저장소 별칭과 주소�
 | Git 버전 | 2.53.0 |
 | 사용자 이름 | anki |
 | 기본 브랜치 | main |
-| 원격 저장소 | 추가 확인 필요 |
+| 원격 저장소 | `origin` 설정됨 (`https://github.com/dksrlgusrnt-design/codisey1.git`) |
+
+확인한 `git remote -v` 출력:
+
+```text
+origin  https://github.com/dksrlgusrnt-design/codisey1.git (fetch)
+origin  https://github.com/dksrlgusrnt-design/codisey1.git (push)
+```
+
+원격 주소 설정은 확인했지만 push 성공 여부는 아직 확인하지 않았다. 실제 push를 수행한 뒤 성공한 경우에만 `git push -u origin main`의 터미널 출력과 `git status -sb` 결과를 추가한다.
 
 ### 9.2 Git 기본 작업 흐름
 
@@ -501,6 +546,7 @@ Git은 로컬 버전 관리 도구이며 GitHub은 원격 저장소 및 협업 �
 - **절대 경로**는 파일 시스템의 기준점(`/`)부터 목적지까지 적은 전체 경로다. 현재 어느 폴더에 있든 같은 위치를 가리킨다. 예: `/home/anki/codyssey-practice/terminal-test/test.txt`.
 - **상대 경로**는 현재 작업 디렉터리(`pwd`로 확인)에서 목적지까지 적는다. 위 실습 폴더 안에 있을 때 `test.txt`는 파일을 가리키고, `../other/file.txt`는 상위 폴더로 올라간 뒤 이동한다. `.`은 현재 폴더, `..`은 부모 폴더다.
 - `~/...`는 셸이 현재 사용자의 홈 디렉터리로 확장하는 표기다. 예를 들어 `/home/anki`가 홈이면 `~/codyssey-practice`는 `/home/anki/codyssey-practice`와 같다. `realpath test.txt`는 상대 경로를 확인 가능한 절대 경로로 바꿔 보여준다.
+- 자동화 스크립트나 여러 작업 디렉터리에서 같은 파일을 지정할 때는 절대 경로를 사용하면 현재 위치에 따른 혼동을 줄일 수 있다. 프로젝트 안에서 파일을 옮겨도 경로를 유지하고 싶을 때는 프로젝트 루트 기준 상대 경로를 사용한다.
 
 #### 파일 권한: r, w, x와 숫자 표기
 
@@ -513,21 +559,35 @@ Linux 권한은 소유자(user), 그룹(group), 그 외 사용자(others) 각각
 | 6 | `rw-` (4+2) | 읽기, 쓰기 |
 | 4 | `r--` | 읽기만 |
 
-`chmod 755 파일`의 세 자리는 순서대로 소유자/그룹/그 외 사용자를 뜻하므로 `rwxr-xr-x`가 된다. `chmod 644 파일`은 `rw-r--r--`로, 소유자는 읽고 쓸 수 있고 나머지는 읽을 수만 있다. 디렉터리에서 `x`는 그 안의 항목에 접근하거나 경로를 통과할 수 있는 권한을 뜻한다. 따라서 디렉터리에 보통 `755`, 일반 텍스트 파일에 `644`를 사용한다. `chmod`는 이 권한 비트를 바꾸며, 파일 소유자나 시스템 정책에 따라 변경이 제한될 수 있다.
+`chmod 755 파일`의 세 자리는 순서대로 소유자/그룹/그 외 사용자를 뜻하므로 `rwxr-xr-x`가 된다. `chmod 644 파일`은 `rw-r--r--`로, 소유자는 읽고 쓸 수 있고 나머지는 읽을 수만 있다. 디렉터리에서 `x`는 그 안의 항목에 접근하거나 경로를 통과할 수 있는 권한을 뜻한다. 따라서 디렉터리에 보통 `755`, 일반 텍스트 파일에 `644`를 사용한다. 예를 들어 공개해도 되는 문서에 `chmod 644 README.md`를 적용한 뒤 `ls -l README.md`로 확인할 수 있다. `chmod`는 이 권한 비트를 바꾸며, 파일 소유자나 시스템 정책에 따라 변경이 제한될 수 있다.
 
 #### Docker 커스텀 이미지
 
-이미지는 컨테이너 생성의 바탕이 되는 실행 환경과 파일의 묶음이고, 컨테이너는 그 이미지로 실행한 인스턴스다. 기존 이미지를 `FROM`으로 지정한 Dockerfile에 필요한 설정이나 파일을 더하고 `docker build -t 이름:태그 .`를 실행하면 커스텀 이미지를 만들 수 있다. 여기서 `.`은 현재 디렉터리를 빌드 입력(빌드 컨텍스트)으로 전달한다. 이 실습에서는 `nginx:alpine`을 바탕으로 HTML을 복사해 `codyssey-web:v1`을 만들었다. 이후 이 이미지로 컨테이너를 여러 번 실행할 수 있다.
+이미지는 컨테이너 생성의 바탕이 되는 실행 환경과 파일의 묶음이고, 컨테이너는 그 이미지로 실행한 인스턴스다. 기존 이미지를 `FROM`으로 지정한 Dockerfile에 필요한 설정이나 파일을 더하고 `docker build -t 이름:태그 .`를 실행하면 커스텀 이미지를 만들 수 있다. 여기서 `.`은 현재 디렉터리를 빌드 입력(빌드 컨텍스트)으로 전달한다. 이 실습에서는 `nginx:alpine`을 바탕으로 HTML을 복사해 `codyssey-web:v1`을 만들었다. 이후 이 이미지로 컨테이너를 여러 번 실행할 수 있다. 이미지를 업데이트할 때는 Dockerfile 또는 복사할 파일을 수정하고 새 태그로 빌드한 뒤 기존 컨테이너를 교체한다. 예: `docker build -t codyssey-web:v2 .` → `docker rm -f codyssey-web` → `docker run -d --name codyssey-web -p 8080:80 codyssey-web:v2` → `curl -i http://localhost:8080`.
 
 #### 포트 매핑이 필요한 이유
 
-컨테이너의 네트워크는 호스트와 구분되어 있으므로, 컨테이너 안에서 NGINX가 80번 포트로 대기해도 호스트 브라우저에서 자동으로 접근할 수 있는 것은 아니다. `-p 8080:80`은 **호스트 포트:컨테이너 포트** 순서로 연결을 만들어 `http://localhost:8080` 요청을 컨테이너의 80번으로 전달한다. Dockerfile의 `EXPOSE 80`은 사용 포트를 문서화하는 설정이며, 실제 호스트 연결은 `docker run -p`가 만든다.
+컨테이너의 네트워크 네임스페이스는 컨테이너별 네트워크 인터페이스와 포트를 호스트와 구분한다. 따라서 컨테이너 안에서 NGINX가 80번 포트로 대기해도 호스트 포트와 연결하지 않으면 호스트 브라우저에서 자동으로 접근할 수 없다. `-p 8080:80`은 **호스트 포트:컨테이너 포트** 순서로 연결을 만들어 `http://localhost:8080` 요청을 컨테이너의 80번으로 전달한다. Dockerfile의 `EXPOSE 80`은 사용 포트를 문서화하는 설정이며, 실제 호스트 연결은 `docker run -p`가 만든다.
 
 #### Docker 볼륨과 데이터 영속성
 
 컨테이너 내부 파일 시스템에만 저장한 데이터는 컨테이너를 제거할 때 함께 사라질 수 있다. Docker Volume은 컨테이너와 별도로 관리되는 저장 공간이다. `-v codyssey-data:/data`처럼 연결하면 컨테이너의 `/data`를 볼륨에 연결한다. 해당 컨테이너를 삭제하고 새 컨테이너에 같은 볼륨을 다시 붙여도 파일이 남아 있어 데이터베이스 파일이나 업로드 파일처럼 실행 인스턴스보다 오래 보존할 데이터에 적합하다. 볼륨 자체를 `docker volume rm`으로 삭제하면 그 안의 데이터도 제거된다.
 
-바인드 마운트는 호스트의 특정 경로를 컨테이너에 직접 연결한다(예: `-v ./html:/usr/share/nginx/html:ro`). 호스트에서 파일을 편집하면 컨테이너에서도 바로 보이므로 개발 중 소스 공유에 편리하다. Volume은 Docker가 관리하는 저장 공간이고, 바인드 마운트는 사용자가 지정한 호스트 경로라는 차이가 있다.
+바인드 마운트는 호스트의 특정 경로를 컨테이너에 직접 연결한다(예: `-v ./html:/usr/share/nginx/html:ro`). 호스트에서 파일을 편집하면 컨테이너에서도 바로 보이므로 개발 중 소스 공유에 편리하지만, 호스트 경로와 권한에 영향을 받는다. Volume은 Docker가 관리하는 저장 공간이라 컨테이너 교체 후 데이터를 유지하기 쉽지만, 호스트에서 파일을 직접 편집하는 흐름은 바인드 마운트보다 번거롭다. 소스 편집·설정 공유에는 바인드 마운트를, 운영 데이터 보존에는 Volume을 권장한다.
+
+#### 포트 충돌 진단
+
+호스트 포트를 다른 프로세스가 사용하면 컨테이너의 포트 바인딩이 실패할 수 있다. 먼저 게시 중인 컨테이너와 호스트 프로세스를 확인한다.
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Ports}}'
+# 사용 이유: 다른 컨테이너가 대상 포트를 게시 중인지 확인한다.
+sudo ss -ltnp 'sport = :8080'
+# 명령어: ss는 소켓 상태를 보여주며 -ltnp는 대기 중인 TCP 포트와 프로세스를 표시한다.
+# 사용 이유: 호스트 8080 포트를 점유한 프로세스를 확인한다.
+```
+
+Docker 컨테이너가 점유한 경우 이름과 상태를 확인한 뒤 해당 컨테이너만 `docker stop 컨테이너명`으로 중지한다. 호스트 프로세스라면 `ss` 출력에서 PID와 명령을 확인하고 해당 프로그램을 정상 종료한 뒤 포트를 다시 확인한다. 프로세스를 확인하지 않은 채 일괄 종료하거나 강제 종료하지 않는다. 진단 증거로 위 명령의 실제 출력을 첨부한다.
 
 #### Git과 GitHub의 역할
 
@@ -573,7 +633,7 @@ ls -l /usr/bin/docker  # 명령어: ls -l은 파일 상세 목록을 표시한�
 
 **해결 및 검증**
 
-이후 Docker Desktop과 WSL2 연동이 복구된 상태에서 다음 결과를 확인하였다.
+이후 Docker Desktop과 WSL2 연동이 복구된 상태에서 다음 결과를 요약해 기록하였다. 실제 복구 과정에서 변경한 설정과 실행 명령은 현재 자료만으로 확인되지 않아, 원문을 확보한 뒤 추가해야 한다. 아래 버전 정보는 복구 후 요약이며 터미널 원문 출력은 아니다.
 
 ```text
 Docker version 29.9.2
@@ -581,7 +641,7 @@ OS/Arch: linux/amd64
 Server: Docker Desktop 4.98.0
 ```
 
-※ 정확한 설정 변경 원인은 추가 확인이 필요하다.
+※ 정확한 설정 변경 원인과 복구 명령은 추가 확인이 필요하다. 실습 당시 변경한 WSL 통합 설정이나 재시작 명령을 확인해 기록한다.
 
 ### Case 02. Git 저장소 외부에서 commit 실행
 
@@ -633,11 +693,21 @@ codisey1/
 ├── README.md
 ├── hello.py
 └── images/
-    ├── terminal-practice.png
-    ├── docker-hello-world.png
-    ├── docker-container.png
+    ├── docker-bind-mount-after.png
     ├── docker-web-browser.png
-    └── github-commit.png
 ```
 
-※ 실제로 저장한 이미지 파일만 README에 연결한다.
+현재 저장된 이미지는 Bind Mount 변경 결과와 웹 브라우저 접속 화면이다. 나머지 평가 항목의 터미널 실행 증거는 아직 첨부하지 않았다. 실제 실습 환경에서 아래 명령들을 실행하고 원문 출력을 README에 붙이거나 터미널 캡처를 `images/`에 추가한다.
+
+| 필요한 증거 | 실제 실행할 명령 또는 내용 |
+|---|---|
+| 터미널 기본 명령 실행 | 4.2절의 명령과 `ls -la`, `cat`, `realpath` 결과 |
+| 권한 전후 | 4.3절의 전후 `stat` 출력 |
+| Docker 엔진 및 목록 | `docker version`, `docker info`, `docker images`, `docker ps -a` |
+| hello-world | `docker run hello-world` 전체 출력 |
+| 커스텀 이미지 빌드 | `docker build -t codyssey-web:v1 .` 전체 로그 |
+| 웹 접속 | `curl -i http://localhost:8080` 응답 원문 |
+| 볼륨 영속성 | 두 컨테이너에서 `cat test.txt`, `ls -l`, `docker volume inspect codyssey-data` |
+| Git push | `git push -u origin main` 성공 출력과 `git status -sb` |
+| 포트 충돌 진단 | `docker ps --format ...`, `sudo ss -ltnp 'sport = :8080'` 출력 |
+| Docker/WSL 복구 | 실제 변경한 설정과 명령, 복구 뒤 확인 출력 |
