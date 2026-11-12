@@ -355,41 +355,88 @@ Windows 웹 브라우저에서 `http://localhost:8080`에 접속하여 사용자
 
 ---
 
-## 8. 데이터 영속성 검증
 
-### 8.1 바인드 마운트 (Bind Mount)
+### 8. 데이터 영속성(Data Persistence)
 
-※ 실습 진행 예정
+#### 8.1 Bind Mount 실습
 
-호스트의 디렉터리와 컨테이너 내부 디렉터리를 연결하여 파일 변경 사항이 반영되는지 확인한다.
+- 호스트 디렉터리와 컨테이너 내부 웹 디렉터리 연결
+- NGINX 컨테이너에 호스트의 HTML 파일 연결
+- 읽기 전용 옵션(`:ro`) 적용
+- 호스트 HTML 파일 수정 후 컨테이너 재시작 및 이미지 재빌드 없이 변경 사항 반영 확인
+
+**실행 환경**
+
+- 컨테이너: `codyssey-bind`
+- 호스트 경로: `./docker-web-bind/html`
+- 컨테이너 경로: `/usr/share/nginx/html`
+- 포트 매핑: `8081:80`
+
+**검증 명령어**
 
 ```bash
-docker run -d \
-  -p 8080:80 \
-  -v "$(pwd)/html:/usr/share/nginx/html" \
-  nginx:alpine
+docker inspect codyssey-bind --format '{{json .Mounts}}'
+curl http://localhost:8081
 ```
 
-호스트에서 HTML 파일을 수정한 후 컨테이너 및 브라우저에서 변경 사항이 반영되는지 확인한다.
+**검증 결과**
 
-### 8.2 Docker 볼륨 (Volume)
+- Mount Type: `bind`
+- Mode: `ro`
+- RW: `false`
+- HTML 파일의 BEFORE → AFTER 변경 사항 반영 확인
 
-※ 실습 진행 예정
+#### 8.2 Docker Volume 실습
 
-Docker 볼륨을 생성하고 컨테이너에 연결하여 컨테이너 삭제 후에도 데이터가 유지되는지 확인한다.
+- Docker Volume 생성
+- Ubuntu 컨테이너의 `/data` 경로에 Volume 연결
+- 컨테이너 내부에 `test.txt` 파일 생성 및 데이터 저장
+- 기존 컨테이너 삭제 후 새로운 컨테이너 실행
+- 기존 데이터 유지 및 재확인
+
+**실행 명령어**
 
 ```bash
 docker volume create codyssey-data
-docker volume inspect codyssey-data
+
+docker run -it \
+  --name codyssey-volume-test \
+  -v codyssey-data:/data \
+  ubuntu bash
 ```
 
-검증 절차:
-1. Docker 볼륨 생성
-2. 컨테이너에 볼륨 연결
-3. 볼륨 내부에 테스트 파일 생성
-4. 기존 컨테이너 삭제
-5. 새로운 컨테이너에 동일 볼륨 연결
-6. 기존 데이터 유지 여부 확인
+**데이터 저장**
+
+```bash
+cd /data
+echo "Docker Volume 데이터 보존 실습 성공!" > test.txt
+cat test.txt
+```
+
+**컨테이너 삭제 및 데이터 검증**
+
+```bash
+docker rm codyssey-volume-test
+
+docker run -it \
+  --name codyssey-volume-check \
+  -v codyssey-data:/data \
+  ubuntu bash
+
+cd /data
+ls -l
+cat test.txt
+```
+
+**검증 결과**
+
+- 기존 컨테이너 삭제 완료
+- 새로운 컨테이너에서 기존 `test.txt` 파일 확인
+- 저장된 데이터가 그대로 유지됨
+- `docker volume inspect codyssey-data`를 통해 Volume 정보 확인
+
+**결론:** 컨테이너를 삭제하더라도 Docker Volume을 삭제하지 않으면 데이터가 유지됨을 확인하였다.
+
 
 ---
 
