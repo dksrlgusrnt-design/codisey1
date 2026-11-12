@@ -59,8 +59,8 @@ code --version
 - [x] hello-world 컨테이너 실행
 - [x] Ubuntu 컨테이너 생성
 - [x] Docker 이미지 및 컨테이너 상태 확인
-- [ ] Dockerfile을 이용한 커스텀 이미지 제작
-- [ ] 포트 매핑 및 브라우저 접속 확인
+- [x] Dockerfile을 이용한 커스텀 이미지 제작
+- [x] 포트 매핑 및 브라우저 접속 확인
 - [ ] 바인드 마운트 데이터 변경 반영 확인
 - [ ] Docker 볼륨 데이터 영속성 검증
 - [ ] Git 저장소 초기화 및 커밋 실습
@@ -220,40 +220,138 @@ docker stats --no-stream
 
 Dockerfile을 이용하여 기본 이미지를 확장하고 정적 웹 콘텐츠를 제공하는 커스텀 이미지를 제작한다.
 
-### 6.1 빌드 및 실행 예시
+### 6.1 Dockerfile 작성
+
+NGINX 기반의 Alpine Linux 이미지를 베이스 이미지로 사용하여 커스텀 웹 서버 이미지를 제작하였다.
+
+프로젝트 구조:
+
+```text
+codisey1/
+├── README.md
+└── docker-web/
+    ├── Dockerfile
+    └── html/
+        └── index.html
+```
+
+Dockerfile:
+
+```dockerfile
+FROM nginx:alpine
+
+COPY html/index.html /usr/share/nginx/html/index.html
+
+EXPOSE 80
+```
+
+주요 명령어 설명:
+
+| 명령어 | 기능 |
+|---|---|
+| FROM | NGINX Alpine 이미지를 기반으로 사용 |
+| COPY | HTML 파일을 컨테이너 내부 웹 루트로 복사 |
+| EXPOSE | 컨테이너가 사용하는 웹 서비스 포트 80을 문서화 |
+
+### 6.2 커스텀 이미지 빌드
+
+실행 명령어:
 
 ```bash
+cd ~/codisey1/docker-web
 docker build -t codyssey-web:v1 .
+docker images
+```
 
+실행 결과:
+
+- 이미지 이름: codyssey-web
+- 태그: v1
+- 빌드 결과: FINISHED
+- 이미지 ID: 8d08f8308974
+- 이미지 크기: 약 93.7MB
+
+### 6.3 컨테이너 실행
+
+실행 명령어:
+
+```bash
 docker run -d \
-  -p 8080:80 \
   --name codyssey-web \
+  -p 8080:80 \
   codyssey-web:v1
 ```
 
-### 6.2 검증 방법
+실행 결과:
+
+- 컨테이너 이름: codyssey-web
+- 컨테이너 ID: b77391600c39
+- 실행 상태: Up
+- 포트 매핑: 8080:80
+
+### 6.4 Dockerfile 기반 이미지 검증
+
+Docker 이미지 및 컨테이너 상태 확인:
 
 ```bash
+docker images
 docker ps
-curl http://localhost:8080
+docker logs codyssey-web
 ```
 
-실제 Dockerfile 내용과 실행 결과는 실습 완료 후 추가한다.
+컨테이너가 정상 실행 중이며 호스트의 8080번 포트와 컨테이너의 80번 포트가 연결된 것을 확인하였다.
 
 ---
 
 ## 7. 포트 매핑 및 네트워크 검증
 
-※ 실습 진행 예정
+### 7.1 포트 매핑 설정
 
-호스트 컴퓨터의 포트와 컨테이너 내부 포트를 연결하여 웹 서비스 접속 여부를 검증한다.
+Docker 실행 시 `-p 8080:80` 옵션을 적용하여 호스트와 컨테이너의 포트를 연결하였다.
 
-예시:
-- 호스트 포트: 8080
-- 컨테이너 포트: 80
+| 구분 | 포트 |
+|---|---|
+| 호스트 포트 | 8080 |
+| 컨테이너 포트 | 80 |
+| 웹 서버 | NGINX |
+
+### 7.2 웹 서버 접속 검증
+
+실행 명령어:
+
+```bash
+curl http://localhost:8080
+```
+
+검증 결과:
+
+- HTML 문서 정상 반환
+- 사용자 정의 웹 페이지 내용 확인
+- NGINX 로그에서 HTTP 200 응답 확인
+
+주요 로그:
+
+```text
+"GET / HTTP/1.1" 200 910
+```
+
+이를 통해 Docker 컨테이너 내부의 NGINX 웹 서버가 호스트의 8080번 포트를 통해 정상적으로 응답하는 것을 확인하였다.
+
+※ 브라우저 접속 화면은 별도 캡처 후 증거 자료에 추가한다.
+
+### 7.3 브라우저 접속 검증
+
+Windows 웹 브라우저에서 `http://localhost:8080`에 접속하여 사용자 정의 HTML 페이지가 정상적으로 표시되는 것을 확인하였다.
+
+**검증 결과**
 - 접속 주소: http://localhost:8080
+- 웹 서버: NGINX
+- HTTP 응답 코드: 200
+- 사용자 정의 HTML 콘텐츠 표시 확인
 
-실제 브라우저 접속 또는 curl 실행 결과를 확인한 후 증거 자료를 추가한다.
+**실습 증거 자료**
+
+![Docker NGINX 웹 서버 브라우저 접속 결과](./images/docker-web-browser.png)
 
 ---
 
