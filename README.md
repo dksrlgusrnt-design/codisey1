@@ -63,8 +63,8 @@ code --version           # 명령어: code --version은 VS Code CLI 버전을 �
 - [x] 포트 매핑 및 브라우저 접속 확인
 - [x] 바인드 마운트 데이터 변경 반영 확인
 - [x] Docker 볼륨 데이터 영속성 검증
-- [ ] Git 저장소 초기화 및 커밋 실습
-- [ ] GitHub 원격 저장소 연결 및 Push 확인
+- [x] Git 저장소 초기화 및 커밋 실습
+- [x] GitHub 원격 저장소 연결 및 Push 확인
 
 ※ 실제 실습과 검증이 완료된 항목만 완료 처리한다.
 
@@ -227,8 +227,6 @@ docker stats --no-stream  # 명령어: docker stats는 자원 사용량을 표�
 ---
 
 ## 6. Dockerfile 기반 커스텀 이미지 제작
-
-※ 실습 진행 예정
 
 Dockerfile을 이용하여 기본 이미지를 확장하고 정적 웹 콘텐츠를 제공하는 커스텀 이미지를 제작한다.
 
