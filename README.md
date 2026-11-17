@@ -50,23 +50,61 @@ code --version           # 명령어: code --version은 VS Code CLI 버전을 �
 
 ---
 
+
 ## 3. 수행 항목 체크리스트
 
-- [x] Linux 터미널 기본 명령어 실습
+### Linux 및 개발 환경 구축
+- [x] Windows 11 환경에서 WSL2 Ubuntu 설치 및 연동
+- [x] VS Code와 WSL2 Ubuntu 개발 환경 연동
+- [x] Linux 터미널 및 CLI 기본 명령어 실습
 - [x] 파일 및 디렉터리 생성, 복사, 이동, 삭제
 - [x] chmod를 이용한 파일 및 디렉터리 권한 설정
-- [x] Docker 설치 및 기본 환경 확인
-- [x] hello-world 컨테이너 실행
-- [x] Ubuntu 컨테이너 생성
-- [x] Docker 이미지 및 컨테이너 상태 확인
-- [x] Dockerfile을 이용한 커스텀 이미지 제작
-- [x] 포트 매핑 및 브라우저 접속 확인
-- [x] 바인드 마운트 데이터 변경 반영 확인
-- [x] Docker 볼륨 데이터 영속성 검증
-- [x] Git 저장소 초기화 및 커밋 실습
-- [x] GitHub 원격 저장소 연결 및 Push 확인
 
-※ 실제 실습과 검증이 완료된 항목만 완료 처리한다.
+### Docker 설치 및 기본 운영
+- [x] Docker Desktop 설치 및 WSL2 연동
+- [x] Docker Client와 Docker Engine 연결 상태 확인
+- [x] hello-world 컨테이너 실행
+- [x] Ubuntu 컨테이너 생성 및 내부 명령어 실행
+- [x] Docker 이미지 및 컨테이너 상태 확인
+- [x] docker run, start, stop 등 컨테이너 관리 명령어 학습
+
+### Docker 이미지 및 웹 서버 구축
+- [x] Dockerfile 기본 구조 및 명령어 학습
+- [x] Dockerfile을 이용한 사용자 정의 이미지 제작
+- [x] Nginx 웹 서버 컨테이너 실행
+- [x] 포트 매핑 및 브라우저 접속 확인
+- [x] curl을 이용한 HTTP 응답 확인
+
+### Docker 네트워크 및 데이터 관리
+- [x] Docker 기본 네트워크 구조 확인
+- [x] Bridge 네트워크 및 컨테이너 IP 주소 확인
+- [x] Bind Mount를 이용한 호스트 파일 연결
+- [x] 바인드 마운트 데이터 변경 반영 확인
+- [x] 읽기 전용(:ro) 마운트 설정 확인
+- [x] Docker Volume 생성 및 데이터 저장
+- [x] 컨테이너 삭제 후 Volume 데이터 영속성 검증
+
+### Git 및 GitHub 버전 관리
+- [x] Git 저장소 상태 및 커밋 이력 확인
+- [x] GitHub 원격 저장소 연결 상태 확인
+- [x] git add를 이용한 변경 파일 Staging
+- [x] git commit을 이용한 변경 이력 기록
+- [x] git log, git show, git diff를 이용한 변경 이력 확인
+- [x] GitHub 원격 저장소로 Push 확인
+
+### Troubleshooting 및 문제 해결
+- [x] Docker Engine 연결 오류 원인 확인
+- [x] Dockerfile 명령어 실행 오류 원인 파악
+- [x] 컨테이너 이름 중복 오류 원인 및 해결 방법 학습
+- [x] Docker 실행 옵션 입력 위치 오류 원인 파악
+- [x] Git Staging 및 Commit 오류 원인 파악
+- [x] Docker 컨테이너 로그 확인
+- [x] Docker Inspect를 이용한 컨테이너 상세 정보 확인
+- [x] 컨테이너 IP 주소 조회 오류 및 데이터 경로 수정
+- [x] Nginx favicon.ico 404 오류 원인 확인
+
+※ Docker Compose 등 선택형 심화 실습은 진행 후 체크리스트에 추가한다.
+
 
 ### 명령어 주석 읽기
 
