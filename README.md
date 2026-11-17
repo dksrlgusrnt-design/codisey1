@@ -140,325 +140,1357 @@ find . -maxdepth 2 -printf '%M %p\n'
 
 ---
 
-## 5. Docker 설치 및 컨테이너 운영
+# 5. Docker 설치 및 컨테이너 운영
 
-### 5.1 Docker 환경 확인
+## 5.1 Docker 환경 확인
 
-Docker Desktop과 WSL2 Ubuntu 간 연동 상태를 확인하였다.
+Docker가 정상적으로 설치되어 있고 Docker Engine과 연결되어 있는지 확인한다.
+
+### 실행 명령어
 
 ```bash
-docker --version  # 사용 이유: Docker CLI 버전 및 Client와 Server 연결 상태를 확인한다.
-docker version
-docker info  # 명령어: docker info는 Engine의 상세 설정과 실행 정보를 출력한다. 서버가 작동하는지 진단한다.
-docker context show  # 명령어: docker context show는 현재 선택된 Engine 연결 대상을 보여준다. 연결 경로를 확인한다.
-docker images
-# 명령어: docker images는 로컬 이미지 목록을 보여준다.
-# 사용 이유: 실습에서 사용할 이미지가 내려받아져 있는지 확인한다.
-docker ps -a
-# 명령어: docker ps는 실행 중인 컨테이너를 보여준다. -a를 붙이면 종료된 컨테이너도 포함한다.
-# 사용 이유: 기존 컨테이너의 실행 및 종료 상태를 확인한다.
+docker --version       # Docker CLI 버전 확인
+docker version         # Docker Client와 Server 버전 및 연결 상태 확인
+docker info            # Docker Engine의 전체 시스템 정보 확인
 ```
 
-확인 결과:
-- Docker Client 정상 작동
-- Docker Engine 정상 연결
+### 확인 결과
+
+- Docker Client: 29.9.3
+- Docker Server / Engine: 29.9.3
+- Docker Desktop: 4.99.0
 - Docker Context: default
-- Client 및 Server OS/Arch: linux/amd64
-- Docker Desktop 서버 연결 확인
+- OS/Arch: linux/amd64
+- WSL2 환경에서 Docker Desktop 연동 확인
 
-### 5.2 hello-world 컨테이너 실행
+### 배운 점
 
-```bash
-docker run hello-world  # 명령어: docker run은 이미지로 컨테이너를 만들고 실행한다. hello-world로 Docker 실행을 검증한다.
-```
+- Docker CLI: 사용자가 Docker 명령어를 입력하는 클라이언트
+- Docker Engine: 컨테이너와 이미지를 실제로 관리하고 실행하는 엔진
+- Docker Desktop: Windows 환경에서 Docker Engine을 사용할 수 있도록 지원하는 프로그램
+- WSL2: Windows에서 Linux 환경을 사용할 수 있도록 지원하는 기술
 
-실행 결과:
-- hello-world 이미지 다운로드 확인
-- 컨테이너 실행 성공
-- "Hello from Docker!" 출력 확인
-
-### 5.3 Ubuntu 컨테이너 생성
-
-```bash
-docker run -it --name codyssey-ubuntu ubuntu bash
-# 사용 이유: Ubuntu 이미지로 컨테이너를 만들고 대화형 Bash에 접속한다.
-# -it는 터미널 입력/출력을 연결하고, --name은 컨테이너 이름을 지정한다.
-```
-
-Ubuntu 이미지를 기반으로 컨테이너를 생성하고 대화형 Bash 터미널에 접속하였다.
-
-컨테이너 내부 확인 명령어:
-
-```bash
-pwd  # 명령어: pwd는 현재 작업 디렉터리 경로를 출력한다. 컨테이너 내부 위치를 확인한다.
-ls -la  # 사용 이유: 컨테이너 내부 파일 목록을 확인한다.
-echo "Hello Codyssey Docker"  # 사용 이유: 컨테이너 안에서 명령을 실행할 수 있는지 문자열 출력으로 확인한다.
-cat /etc/os-release  # 사용 이유: 컨테이너의 Ubuntu 배포판 정보를 확인한다.
-exit  # 명령어: exit은 현재 셸 세션을 종료한다. 대화형 컨테이너 셸에서 빠져나온다.
-```
-
-※ 내부 명령 실행 결과는 추가 확인 후 기록한다.
-
-### 5.4 Docker 이미지 및 컨테이너 관리
-
-실제 확인된 이미지:
-
-| 이미지 | 확인 결과 |
-|---|---|
-| hello-world:latest | 다운로드 및 실행 확인 |
-| ubuntu:latest | 다운로드 및 컨테이너 생성 확인 |
-
-컨테이너 확인 명령어:
-
-```bash
-docker images  # 사용 이유: 로컬에 있는 이미지 목록을 다시 확인한다.
-docker ps  # 명령어: docker ps는 실행 중 컨테이너 목록을 출력한다. 이 단계에서는 실행 중인 컨테이너를 확인한다.
-docker ps -a  # 사용 이유: 종료된 Ubuntu 컨테이너까지 포함해 상태를 비교한다.
-docker logs codyssey-ubuntu  # 명령어: docker logs는 컨테이너 로그를 출력한다. Ubuntu 컨테이너의 실행 결과를 확인한다.
-docker stats --no-stream  # 명령어: docker stats는 자원 사용량을 표시한다. --no-stream은 한 번만 출력하게 한다.
-```
-
-기존 Ubuntu 컨테이너 확인 결과:
-- 컨테이너 이름: codyssey-ubuntu
-- 이미지: ubuntu
-- 실행 명령: bash
-- 상태: Exited (0)
+Docker 명령어를 실행하려면 Docker CLI뿐만 아니라 Docker Engine도 정상적으로 실행되고 있어야 한다.
 
 ---
 
-## 6. Dockerfile 기반 커스텀 이미지 제작
+## 5.2 Hello World 컨테이너 실행
 
-Dockerfile을 이용하여 기본 이미지를 확장하고 정적 웹 콘텐츠를 제공하는 커스텀 이미지를 제작한다.
+Docker가 정상적으로 작동하는지 확인하기 위해 기본 테스트 이미지를 실행한다.
 
-### 6.1 Dockerfile 작성
-
-NGINX 기반의 Alpine Linux 이미지를 베이스 이미지로 사용하여 커스텀 웹 서버 이미지를 제작하였다.
-
-프로젝트 구조:
-
-```text
-codisey1/
-├── README.md
-└── docker-web/
-    ├── Dockerfile
-    └── html/
-        └── index.html
-```
-
-Dockerfile:
-
-```dockerfile
-FROM nginx:alpine
-# 명령어: FROM은 새 이미지의 기반 이미지를 지정한다. NGINX 웹 서버를 재사용한다.
-COPY html/index.html /usr/share/nginx/html/index.html
-# 명령어: COPY는 빌드 컨텍스트의 파일을 이미지 안으로 복사한다. 사용자 HTML을 웹 루트에 둔다.
-EXPOSE 80
-# 명령어: EXPOSE는 컨테이너가 사용할 포트를 문서화한다. NGINX의 HTTP 포트 80을 나타낸다.
-```
-
-주요 명령어 설명:
-
-| 명령어 | 기능 |
-|---|---|
-| FROM | NGINX Alpine 이미지를 기반으로 사용 |
-| COPY | HTML 파일을 컨테이너 내부 웹 루트로 복사 |
-| EXPOSE | 컨테이너가 사용하는 웹 서비스 포트 80을 문서화 |
-
-### 6.2 커스텀 이미지 빌드
-
-실행 명령어:
+### 실행 명령어
 
 ```bash
-cd ~/codisey1/docker-web  # 사용 이유: Dockerfile과 html 폴더가 있는 위치로 이동해 이미지를 빌드한다.
-docker build -t codyssey-web:v1 .
-# 명령어: docker build는 Dockerfile로 이미지를 만든다. -t는 이름:태그를 지정하고 .은 현재 폴더를 빌드 컨텍스트로 쓴다.
-# 사용 이유: 작성한 웹 콘텐츠를 포함한 커스텀 이미지를 만든다.
-docker images  # 사용 이유: 빌드한 이미지가 로컬에 생성됐는지 확인한다.
+docker run hello-world
 ```
+
+### 명령어 설명
+
+- `docker run`: 이미지를 기반으로 컨테이너를 생성하고 실행
+- `hello-world`: 실행할 Docker 이미지 이름
+- 이미지가 로컬에 없으면 Docker Hub에서 자동으로 다운로드
+
+### 실행 결과
+
+- hello-world 이미지 다운로드
+- 컨테이너 생성 및 실행
+- `Hello from Docker!` 메시지 출력
+
+### 배운 점
+
+`docker run`은 다음 작업을 순서대로 수행한다.
+
+1. 로컬에 이미지가 있는지 확인
+2. 이미지가 없으면 Docker Hub에서 다운로드
+3. 이미지 기반으로 컨테이너 생성
+4. 컨테이너 실행
+5. 실행 결과 출력
+
+Docker는 이미지를 기반으로 컨테이너를 생성하고 실행하는 구조이다.
+
+---
+
+## 5.3 Ubuntu 컨테이너 실행 및 내부 명령어 실습
+
+Ubuntu 이미지를 이용하여 Linux 컨테이너를 실행하고 내부 환경을 확인한다.
+
+### 실행 명령어
+
+```bash
+docker run -it --name codyssey-ubuntu ubuntu bash
+```
+
+### 명령어 설명
+
+- `-i`: 컨테이너의 표준 입력을 유지
+- `-t`: 터미널 환경을 할당
+- `--name codyssey-ubuntu`: 컨테이너 이름 지정
+- `ubuntu`: 사용할 Docker 이미지
+- `bash`: 컨테이너 내부에서 실행할 셸
+
+### 컨테이너 내부 명령어
+
+```bash
+pwd                              # 현재 작업 디렉터리 확인
+ls -la                           # 숨김 파일을 포함한 파일 및 디렉터리 목록 확인
+echo "Hello Codyssey Docker"     # 지정한 문자열 출력
+cat /etc/os-release              # 운영체제 및 버전 정보 확인
+exit                             # 컨테이너 내부 셸 종료
+```
+
+### 실행 결과
+
+- 현재 위치 확인: `/`
+- 컨테이너 내부 파일 및 디렉터리 목록 확인
+- 문자열 출력 확인: `Hello Codyssey Docker`
+- Ubuntu 운영체제 정보 확인
+- Ubuntu 버전: 26.04.1 LTS
+- VERSION_ID: 26.04
+- `exit` 명령어로 컨테이너 내부에서 빠져나와 호스트 터미널로 복귀
+
+### 배운 점
+
+- `-i`: 컨테이너의 표준 입력을 유지
+- `-t`: 터미널 환경을 할당
+- `--name`: 컨테이너 이름 지정
+- `ubuntu`: 사용할 Docker 이미지
+- `bash`: 컨테이너 내부에서 실행할 명령어
+- `exit`: 컨테이너 내부 셸 종료
+
+컨테이너는 호스트 운영체제와 분리된 독립적인 실행 환경을 제공한다.
+
+---
+
+## 5.4 Docker 이미지 및 컨테이너 관리
+
+Docker 이미지와 컨테이너의 상태를 확인하고 관리하는 명령어를 실습한다.
+
+### 1) Docker 이미지 확인
+
+```bash
+docker images
+```
+
+### 2) 실행 중인 컨테이너 확인
+
+```bash
+docker ps
+```
+
+### 3) 전체 컨테이너 확인
+
+```bash
+docker ps -a
+```
+
+### 4) 컨테이너 로그 확인
+
+```bash
+docker logs codyssey-ubuntu
+```
+
+### 5) 컨테이너 자원 사용량 확인
+
+```bash
+docker stats --no-stream
+```
+
+### 명령어 설명
+
+- `docker images`: 로컬에 저장된 Docker 이미지 목록 확인
+- `docker ps`: 현재 실행 중인 컨테이너 확인
+- `docker ps -a`: 종료된 컨테이너를 포함한 전체 목록 확인
+- `docker logs`: 지정한 컨테이너의 실행 로그 확인
+- `docker stats`: 컨테이너의 CPU, 메모리 등 자원 사용량 확인
+- `--no-stream`: 실시간 갱신 없이 한 번만 사용량 출력
+
+### 실행 결과
+
+| REPOSITORY | TAG | IMAGE ID | SIZE |
+|---|---|---|---|
+| hello-world | latest | e2ac70e7319a | 10.1kB |
+| ubuntu | latest | a8acf325a119 | 102MB |
 
 실행 결과:
 
-- 이미지 이름: codyssey-web
-- 태그: v1
-- 빌드 결과: FINISHED
-- 이미지 ID: 8d08f8308974
-- 이미지 크기: 약 93.7MB
+| CONTAINER ID | IMAGE | COMMAND | STATUS | NAMES |
+|---|---|---|---|---|
+| 8432bc5bef42 | ubuntu | bash | Exited (0) | codyssey-ubuntu |
+| c4fc6e741ea1 | hello-world | /hello | Exited (0) | wonderful_allen |
 
-### 6.3 컨테이너 실행
+- `docker ps` 실행 시 실행 중인 컨테이너가 없어 목록이 비어 있는 것을 확인했다.
+- `docker logs codyssey-ubuntu`로 Ubuntu 컨테이너의 실행 기록을 확인했다.
+- `docker stats --no-stream`은 실행 중인 컨테이너가 없어 자원 사용량이 표시되지 않았다.
 
-실행 명령어:
+### 배운 점
+
+| 명령어 | 기능 |
+|---|---|
+| `docker images` | 로컬에 저장된 이미지 목록 확인 |
+| `docker ps` | 실행 중인 컨테이너 확인 |
+| `docker ps -a` | 종료된 컨테이너를 포함한 전체 목록 확인 |
+| `docker logs` | 컨테이너 실행 로그 확인 |
+| `docker stats` | 컨테이너 CPU, 메모리 등 자원 사용량 확인 |
+
+### 핵심 개념
+
+- Image: 컨테이너를 생성하기 위한 실행 환경의 설계도
+- Container: 이미지를 기반으로 생성되어 실제 실행되는 인스턴스
+- Docker Image는 컨테이너를 생성하는 기반이며, 하나의 이미지로 여러 컨테이너를 실행할 수 있다.
+
+---
+
+# 6. Dockerfile 기반 커스텀 이미지 제작
+
+## 6.1 프로젝트 파일 구조 확인
+
+기존 프로젝트 디렉터리에서 Dockerfile과 웹 페이지 파일의 위치를 확인한다.
+
+### 디렉터리 이동
+
+```bash
+cd ~/codisey1/docker-web    # 프로젝트 내 docker-web 디렉터리로 이동
+```
+
+### 파일 구조 확인
+
+```bash
+ls -R                       # 현재 디렉터리와 하위 디렉터리의 파일 목록 확인
+```
+
+### 프로젝트 구조
+
+```text
+docker-web/
+├── Dockerfile
+└── html/
+    └── index.html
+```
+
+### 배운 점
+
+- Dockerfile: Docker 이미지를 제작하기 위한 설정 파일
+- index.html: 웹 서버에서 사용자에게 제공할 HTML 파일
+- Dockerfile과 HTML 파일을 동일한 프로젝트 디렉터리에서 관리한다.
+
+---
+
+## 6.2 Dockerfile 작성
+
+Dockerfile을 이용하여 Nginx 기반의 커스텀 이미지를 제작한다.
+
+### Dockerfile 내용
+
+```dockerfile
+FROM nginx:alpine
+# Nginx Alpine 이미지를 기반 이미지로 지정
+
+COPY html/index.html /usr/share/nginx/html/index.html
+# 프로젝트의 HTML 파일을 컨테이너 내부 Nginx 웹 서버 경로로 복사
+
+EXPOSE 80
+# 컨테이너에서 사용할 포트 80을 명시
+```
+
+### Dockerfile 명령어 설명
+
+| 명령어 | 기능 |
+|---|---|
+| `FROM` | 기반이 되는 이미지 지정 |
+| `COPY` | 호스트의 파일을 이미지 내부로 복사 |
+| `EXPOSE` | 컨테이너가 사용할 포트 정보 표시 |
+
+### 코드 분석
+
+**1. FROM nginx:alpine**
+
+- Nginx를 기반 이미지로 지정한다.
+- Alpine Linux 기반의 경량 Nginx 이미지를 사용한다.
+
+**2. COPY html/index.html /usr/share/nginx/html/index.html**
+
+- 프로젝트의 HTML 파일을 컨테이너 내부 Nginx 웹 서버 경로로 복사한다.
+- 컨테이너 실행 시 해당 HTML 파일을 웹 페이지로 제공할 수 있다.
+
+**3. EXPOSE 80**
+
+- 컨테이너에서 웹 서버가 사용할 포트 80을 명시한다.
+- EXPOSE 자체가 호스트와 컨테이너의 포트를 연결하는 것은 아니다.
+
+### 배운 점
+
+Dockerfile은 터미널에서 직접 실행하는 명령어가 아니라 Docker 이미지를 제작하기 위한 설정 파일이다.
+
+---
+
+## 6.3 Docker 커스텀 이미지 빌드
+
+작성한 Dockerfile을 이용하여 나만의 Docker 이미지를 제작한다.
+
+### 실행 명령어
+
+```bash
+docker build -t codyssey-web:v1 .
+```
+
+### 명령어 분석
+
+| 구성 요소 | 의미 |
+|---|---|
+| `docker build` | Docker 이미지 빌드 |
+| `-t` | 이미지 이름과 태그 지정 |
+| `codyssey-web` | 이미지 이름 |
+| `v1` | 이미지 버전 |
+| `.` | 현재 디렉터리를 빌드 컨텍스트로 지정 |
+
+### 명령어 사용 이유
+
+- Dockerfile에 작성한 설정을 바탕으로 새로운 이미지를 제작하기 위해 사용한다.
+- `-t`를 이용해 이미지 이름과 버전을 지정한다.
+- 마지막의 `.`은 현재 디렉터리의 파일을 빌드에 사용할 수 있도록 지정한다.
+
+### 빌드 결과
+
+```text
+[+] Building 5.2s (7/7) FINISHED
+
+[1/2] FROM nginx:alpine
+[2/2] COPY html/index.html /usr/share/nginx/html/index.html
+
+Successfully built
+Successfully tagged codyssey-web:v1
+```
+
+### 이미지 생성 확인
+
+```bash
+docker images
+```
+
+### 실행 결과
+
+| REPOSITORY | TAG | IMAGE ID | SIZE |
+|---|---|---|---|
+| codyssey-web | v1 | d24c473af5da | 63MB |
+| hello-world | latest | e2ac70e7319a | 10.1kB |
+| ubuntu | latest | a8acf325a119 | 102MB |
+
+### 배운 점
+
+Dockerfile에 작성한 설정을 바탕으로 기존 Nginx 이미지를 확장하여 사용자 정의 Docker 이미지를 만들었다.
+
+---
+
+## 6.4 커스텀 이미지로 컨테이너 실행
+
+제작한 커스텀 이미지를 이용하여 웹 서버 컨테이너를 실행한다.
+
+### 1) 기존 컨테이너 이름 중복 확인
+
+```bash
+docker ps -a --filter name=codyssey-web
+```
+
+### 명령어 설명
+
+- `docker ps -a`: 실행 및 종료된 모든 컨테이너 확인
+- `--filter name=codyssey-web`: 이름에 codyssey-web이 포함된 컨테이너만 검색
+- 동일한 이름의 컨테이너가 있는지 확인하여 이름 충돌을 방지한다.
+
+### 2) 컨테이너 실행
 
 ```bash
 docker run -d \
   --name codyssey-web \
   -p 8080:80 \
   codyssey-web:v1
-# 명령어: docker run은 이미지로 컨테이너를 실행한다. -d는 백그라운드, --name은 이름 지정, -p는 호스트 포트와 컨테이너 포트 연결이다.
-# 사용 이유: 커스텀 이미지로 웹 서버를 실행해 호스트에서 접속할 수 있게 한다.
 ```
 
-실행 결과:
+### 명령어 분석
 
-- 컨테이너 이름: codyssey-web
-- 컨테이너 ID: b77391600c39
-- 실행 상태: Up
-- 포트 매핑: 8080:80
-
-### 6.4 Dockerfile 기반 이미지 검증
-
-Docker 이미지 및 컨테이너 상태 확인:
-
-```bash
-docker images  # 사용 이유: 웹 컨테이너가 사용할 이미지가 로컬에 있는지 확인한다.
-docker ps  # 사용 이유: 웹 컨테이너의 실행 상태와 포트 연결을 확인한다.
-docker logs codyssey-web  # 사용 이유: NGINX 시작 및 요청 로그를 확인한다.
-```
-
-컨테이너가 정상 실행 중이며 호스트의 8080번 포트와 컨테이너의 80번 포트가 연결된 것을 확인하였다.
-
----
-
-## 7. 포트 매핑 및 네트워크 검증
-
-### 7.1 포트 매핑 설정
-
-Docker 실행 시 `-p 8080:80` 옵션을 적용하여 호스트와 컨테이너의 포트를 연결하였다.
-
-| 구분 | 포트 |
+| 구성 요소 | 의미 |
 |---|---|
-| 호스트 포트 | 8080 |
-| 컨테이너 포트 | 80 |
-| 웹 서버 | NGINX |
+| `docker run` | 컨테이너 생성 및 실행 |
+| `-d` | 백그라운드에서 실행 |
+| `--name codyssey-web` | 컨테이너 이름 지정 |
+| `-p 8080:80` | 호스트 8080 포트와 컨테이너 80 포트 연결 |
+| `codyssey-web:v1` | 실행할 Docker 이미지 지정 |
 
-### 7.2 웹 서버 접속 검증
+### 명령어 사용 이유
 
-실행 명령어:
+- `-d`: 터미널을 점유하지 않고 컨테이너를 백그라운드에서 실행하기 위해 사용한다.
+- `--name`: 컨테이너를 쉽게 식별하고 관리하기 위해 이름을 지정한다.
+- `-p 8080:80`: 호스트 PC의 8080 포트로 들어온 요청을 컨테이너의 80 포트로 전달하기 위해 사용한다.
+- `codyssey-web:v1`: 앞에서 직접 제작한 커스텀 이미지를 실행하기 위해 지정한다.
 
-```bash
-curl http://localhost:8080  # 명령어: curl은 URL에 HTTP 요청을 보내고 응답을 출력한다. 호스트 포트로 웹 페이지를 확인한다.
-```
+### 실행 결과
 
-검증 결과:
-
-- HTML 문서 정상 반환
-- 사용자 정의 웹 페이지 내용 확인
-- NGINX 로그에서 HTTP 200 응답 확인
-
-주요 로그:
+컨테이너 ID:
 
 ```text
-"GET / HTTP/1.1" 200 910
+592528adbcdfe45d0390fc5bb5ac32dcda5532382e967bad20375799b6403b27
 ```
 
-이를 통해 Docker 컨테이너 내부의 NGINX 웹 서버가 호스트의 8080번 포트를 통해 정상적으로 응답하는 것을 확인하였다.
+### 3) 컨테이너 실행 상태 확인
 
-※ 브라우저 접속 화면은 별도 캡처 후 증거 자료에 추가한다.
+```bash
+docker ps
+```
 
-### 7.3 브라우저 접속 검증
+### 실행 결과
 
-Windows 웹 브라우저에서 `http://localhost:8080`에 접속하여 사용자 정의 HTML 페이지가 정상적으로 표시되는 것을 확인하였다.
+```text
+CONTAINER ID   IMAGE             COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+592528adbcdf   codyssey-web:v1   "/docker-entrypoint.…"   28 seconds ago   Up 27 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   codyssey-web
+```
 
-**검증 결과**
-- 접속 주소: http://localhost:8080
-- 웹 서버: NGINX
-- HTTP 응답 코드: 200
-- 사용자 정의 HTML 콘텐츠 표시 확인
+### 확인 사항
 
-**실습 증거 자료**
+- 컨테이너 이름: codyssey-web
+- 사용 이미지: codyssey-web:v1
+- 컨테이너 상태: Up
+- 포트 연결: 8080 → 80
+- 백그라운드 실행 확인
 
-![Docker NGINX 웹 서버 브라우저 접속 결과](./images/docker-web-browser.png)
+### 배운 점
+
+호스트 PC의 8080 포트로 들어오는 요청을 컨테이너 내부 Nginx의 80 포트로 전달하도록 설정했다.
 
 ---
 
+## 6.5 커스텀 웹 서버 접속 테스트
 
-### 8. 데이터 영속성(Data Persistence)
+현재 컨테이너가 실행 중이고 포트가 연결된 상태까지 확인했다.
 
-#### 8.1 Bind Mount 실습
+### 접속 주소
 
-- 호스트 디렉터리와 컨테이너 내부 웹 디렉터리 연결
-- NGINX 컨테이너에 호스트의 HTML 파일 연결
-- 읽기 전용 옵션(`:ro`) 적용
-- 호스트 HTML 파일 수정 후 컨테이너 재시작 및 이미지 재빌드 없이 변경 사항 반영 확인
-
-**실행 환경**
-
-- 컨테이너: `codyssey-bind`
-- 호스트 경로: `./docker-web-bind/html`
-- 컨테이너 경로: `/usr/share/nginx/html`
-- 포트 매핑: `8081:80`
-
-**검증 명령어**
-
-```bash
-docker inspect codyssey-bind --format '{{json .Mounts}}'
-# 명령어: docker inspect는 Docker 객체의 상세 정보를 출력하며 --format은 표시 형식을 제한한다.
-# 사용 이유: 바인드 마운트 경로와 읽기 전용 설정을 확인한다.
-curl http://localhost:8081  # 사용 이유: 호스트 파일의 수정 내용이 웹 응답에 반영됐는지 확인한다.
+```text
+http://localhost:8080
 ```
 
-**검증 결과**
+### HTTP 응답 확인 명령어
 
-- Mount Type: `bind`
-- Mode: `ro`
-- RW: `false`
-- HTML 파일의 BEFORE → AFTER 변경 사항 반영 확인
+```bash
+curl -i http://localhost:8080
+```
 
-#### 8.2 Docker Volume 실습
+### 명령어 설명
 
-- Docker Volume 생성
-- Ubuntu 컨테이너의 `/data` 경로에 Volume 연결
-- 컨테이너 내부에 `test.txt` 파일 생성 및 데이터 저장
-- 기존 컨테이너 삭제 후 새로운 컨테이너 실행
-- 기존 데이터 유지 및 재확인
+- `curl`: 터미널에서 웹 서버에 HTTP 요청을 보내는 도구
+- `-i`: HTTP 응답 헤더를 본문과 함께 출력
+- `http://localhost:8080`: 현재 PC의 8080 포트에 접속
 
-**실행 명령어**
+### 사용 이유
+
+브라우저를 실행하지 않고도 웹 서버가 정상적으로 응답하는지 터미널에서 확인할 수 있다.
+
+### 확인할 사항
+
+- HTTP 응답 코드 200 확인
+- Dockerfile에서 복사한 index.html 내용 출력 확인
+- 브라우저에서 사용자 정의 웹 페이지 표시 확인
+
+※ 브라우저 접속 및 HTTP 응답 결과는 실제 확인 후 기록한다.
+
+---
+
+## 6.6 핵심 개념 정리
+
+| 구분 | 개념 | 역할 |
+|---|---|---|
+| Dockerfile | 이미지 제작 설정 파일 | 이미지 제작 방법 정의 |
+| Image | 실행 환경의 설계도 | 컨테이너 생성의 기반 |
+| Container | 실행 중인 인스턴스 | 실제 프로그램 실행 |
+| FROM | 기반 이미지 지정 | 이미지의 출발점 설정 |
+| COPY | 파일 복사 | 사용자 파일을 이미지에 포함 |
+| EXPOSE | 포트 정보 명시 | 컨테이너의 서비스 포트 표시 |
+| docker build | 이미지 빌드 | Dockerfile을 이용한 이미지 제작 |
+| docker run | 컨테이너 실행 | 이미지를 기반으로 컨테이너 생성 |
+| -p | 포트 연결 | 호스트와 컨테이너의 포트 연결 |
+| -d | 백그라운드 실행 | 터미널과 분리하여 컨테이너 실행 |
+
+### 최종 실습 흐름
+
+```text
+Docker 환경 확인
+       ↓
+Docker 이미지 다운로드
+       ↓
+Ubuntu 컨테이너 실행
+       ↓
+컨테이너 내부 Linux 명령어 실습
+       ↓
+이미지 및 컨테이너 관리
+       ↓
+Dockerfile 작성
+       ↓
+커스텀 이미지 빌드
+       ↓
+커스텀 이미지 기반 컨테이너 실행
+       ↓
+포트 연결 및 웹 페이지 접속 테스트
+```
+
+### 이번 실습의 핵심 학습 내용
+
+1. Docker 환경을 구성하고 Docker Engine과 정상적으로 연결되는지 확인했다.
+2. Docker Hub에서 이미지를 다운로드하고 Ubuntu 컨테이너를 실행했다.
+3. Docker 이미지와 컨테이너의 차이 및 관리 명령어를 익혔다.
+4. Dockerfile을 작성하여 Nginx 기반 커스텀 이미지를 제작했다.
+5. 제작한 이미지로 컨테이너를 실행하고 호스트 포트와 컨테이너 포트를 연결했다.
+
+---
+
+# 7. 포트매핑 및 네트워크 검증
+
+## 7.1 Docker 포트매핑 개념 이해
+
+Docker 컨테이너 내부에서 실행되는 웹 서버에 호스트 PC가 접근할 수 있도록 포트를 연결하는 기능이다.
+
+### 포트매핑 구조
+
+![Docker 포트매핑 구조](images/docker-port-mapping.jpg)
+
+### 포트매핑 기본 구조
+
+```text
+호스트 PC                         Docker 컨테이너
+   │                                   │
+   │  localhost:8080                   │
+   │                                   │
+   └────────── 8080 → 80 ──────────────┘
+                                       │
+                                  Nginx 웹 서버
+                                    Port 80
+```
+
+### 포트매핑 실행 명령어
+
+```bash
+docker run -d --name codyssey-web -p 8080:80 codyssey-web:v1
+# -p: 호스트의 8080 포트와 컨테이너의 80 포트를 연결
+```
+
+※ 기존에 동일한 이름의 컨테이너가 존재하면 이름 충돌이 발생한다. 기존 컨테이너를 재사용할 수 있으므로 무조건 새로 생성할 필요는 없다.
+
+### 포트매핑 개념
+
+| 구성 요소 | 의미 |
+|---|---|
+| Host | Docker가 실행되는 호스트 PC |
+| Container | Docker 이미지를 기반으로 실행되는 컨테이너 |
+| 8080 | 호스트 PC의 포트 |
+| 80 | 컨테이너 내부 웹 서버 포트 |
+| -p 8080:80 | 호스트와 컨테이너의 포트 연결 |
+
+### 핵심 개념
+
+- 호스트 포트: 외부에서 호스트 PC를 통해 접근하는 포트
+- 컨테이너 포트: 컨테이너 내부에서 서비스가 실행되는 포트
+- 포트매핑을 통해 호스트 PC에서 컨테이너 내부 서비스에 접근할 수 있다.
+
+---
+
+## 7.2 실행 중인 컨테이너 및 포트매핑 확인
+
+현재 실행 중인 컨테이너와 포트 연결 상태를 확인한다.
+
+### 실행 명령어
+
+```bash
+docker ps
+# 현재 실행 중인 컨테이너 및 포트매핑 확인
+```
+
+### 실행 결과
+
+| CONTAINER | IMAGE | HOST PORT | CONTAINER PORT | STATUS |
+|---|---|---|---|---|
+| codyssey-web | codyssey-web:v1 | 8080 | 80 | Up |
+| codyssey-bind | nginx:alpine | 8081 | 80 | Up |
+
+### 포트매핑 상세 정보 확인
+
+```bash
+docker port codyssey-web
+# 지정한 컨테이너의 포트매핑 정보 확인
+```
+
+### 실제 실행 결과
+
+```text
+80/tcp -> 0.0.0.0:8080
+80/tcp -> [::]:8080
+```
+
+### 결과 분석
+
+| 출력 내용 | 의미 |
+|---|---|
+| 80/tcp | 컨테이너 내부 포트 |
+| 0.0.0.0:8080 | 호스트의 모든 IPv4 네트워크 인터페이스에서 8080 포트 연결 허용 |
+| [::]:8080 | 호스트의 IPv6 네트워크 인터페이스에서 8080 포트 연결 허용 |
+
+### 배운 점
+
+- `docker ps`: 실행 중인 컨테이너 확인
+- `docker port`: 컨테이너의 포트 연결 정보 확인
+- 포트매핑은 호스트와 컨테이너 사이의 통신을 연결하는 역할을 한다.
+
+---
+
+## 7.3 실제 웹 서버 통신 검증
+
+포트매핑이 정상적으로 작동하는지 확인하기 위해 HTTP 요청을 전송한다.
+
+### 실행 명령어
+
+```bash
+curl -i http://localhost:8080
+# 호스트의 8080 포트로 HTTP 요청을 보내고 응답 헤더와 본문 확인
+```
+
+### 명령어 설명
+
+| 구성 요소 | 의미 |
+|---|---|
+| curl | 웹 서버에 HTTP 요청을 보내는 도구 |
+| -i | HTTP 응답 헤더와 본문을 함께 출력 |
+| localhost | 현재 컴퓨터 |
+| 8080 | 호스트에서 연결한 포트 |
+
+### 실제 실행 결과
+
+```text
+HTTP/1.1 200 OK
+Server: nginx/1.31.8
+Content-Type: text/html
+Content-Length: 910
+```
+
+### 결과 분석
+
+| 항목 | 실제 결과 | 의미 |
+|---|---|---|
+| HTTP 상태 코드 | 200 OK | HTTP 요청 정상 처리 |
+| 웹 서버 | nginx/1.31.8 | Nginx 서버 응답 확인 |
+| 콘텐츠 유형 | text/html | HTML 문서 응답 |
+| 콘텐츠 크기 | 910 bytes | 응답 본문 크기 |
+| 웹 페이지 | Codyssey Docker Project | 직접 제작한 HTML 출력 |
+
+### 확인한 HTML 내용
+
+```html
+<h1>🚀 Codyssey Docker Project</h1>
+<h2>나만의 웹 서버 구축 성공!</h2>
+```
+
+### 배운 점
+
+- HTTP 200 OK는 서버가 요청을 정상적으로 처리했다는 의미이다.
+- 포트매핑을 통해 호스트에서 컨테이너 내부 Nginx 웹 서버에 접근할 수 있다.
+- 실제 HTML 응답까지 확인하여 Docker 웹 서버 통신이 정상적으로 작동하는 것을 검증했다.
+
+---
+
+## 7.4 Docker 네트워크 확인
+
+Docker에서 관리하는 네트워크 목록을 확인한다.
+
+### 실행 명령어
+
+```bash
+docker network ls
+# Docker 네트워크 목록 확인
+```
+
+### 실제 실행 결과
+
+```text
+NETWORK ID     NAME      DRIVER    SCOPE
+b7a10b634f03   bridge    bridge    local
+c504bd64b0c0   host      host      local
+23da862f95a6   none      null      local
+```
+
+### 네트워크 종류
+
+| 네트워크 | 설명 |
+|---|---|
+| bridge | 기본적인 컨테이너 네트워크. 같은 네트워크에 연결된 컨테이너끼리 통신 가능 |
+| host | 컨테이너가 호스트의 네트워크 환경을 공유 |
+| none | 컨테이너의 외부 네트워크 연결을 차단 |
+
+### 배운 점
+
+- `docker network`: Docker 네트워크 관리 명령어
+- `ls`: 네트워크 목록 조회
+- DRIVER: 네트워크 동작 방식
+- SCOPE: 네트워크 적용 범위
+
+---
+
+## 7.5 Docker 네트워크 상세 정보 확인
+
+기본 bridge 네트워크에 연결된 컨테이너와 IP 주소를 확인한다.
+
+### 실행 명령어
+
+```bash
+docker network inspect bridge
+# bridge 네트워크의 상세 정보 및 연결된 컨테이너 확인
+```
+
+### 실제 실행 결과
+
+| 항목 | 실제 값 | 의미 |
+|---|---|---|
+| Network | bridge | 연결된 네트워크 |
+| Driver | bridge | 브리지 네트워크 방식 |
+| Subnet | 172.17.0.0/16 | 컨테이너에 할당할 IP 주소 범위 |
+| Gateway | 172.17.0.1 | 브리지 네트워크 게이트웨이 |
+| Container | codyssey-web | 연결된 컨테이너 |
+| IPv4Address | 172.17.0.2/16 | 컨테이너 IP 주소 |
+
+### 네트워크 구조
+
+```text
+Docker Host
+    │
+    ▼
+Docker bridge Network
+    │
+    ├── Gateway: 172.17.0.1
+    │
+    ├── codyssey-web
+    │      └── IP: 172.17.0.2
+    │
+    └── codyssey-bind
+           └── IP: 172.17.0.3
+```
+
+### 컨테이너 IP 주소 확인
+
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' codyssey-web
+# codyssey-web 컨테이너의 Docker 내부 IP 주소 확인
+```
+
+실제 확인 결과:
+
+```text
+172.17.0.2
+```
+
+### 배운 점
+
+- Subnet: 네트워크에서 사용할 수 있는 IP 주소 범위
+- Gateway: 네트워크 외부와 통신하기 위한 출입구 역할
+- IPAddress: Docker 네트워크에서 컨테이너를 식별하는 주소
+- 포트매핑과 컨테이너 IP 주소는 서로 다른 개념이다.
+
+---
+
+## 7.6 Bind Mount 개념 이해
+
+Bind Mount는 호스트 PC의 특정 디렉터리를 컨테이너 내부 디렉터리와 직접 연결하는 기능이다.
+
+### Bind Mount 구조
+
+```text
+호스트 PC                         Docker 컨테이너
+docker-web-bind/
+    │
+    └── html/
+         └── index.html
+              │
+              │ Bind Mount
+              ▼
+                         /usr/share/nginx/html/
+                                  │
+                                  └── index.html
+```
+
+### Bind Mount의 특징
+
+- 호스트 PC의 파일을 컨테이너 내부와 공유할 수 있다.
+- 호스트에서 파일을 수정하면 컨테이너에서도 변경된 내용을 확인할 수 있다.
+- Docker 이미지를 다시 빌드하지 않아도 파일 변경 사항을 반영할 수 있다.
+- `:ro` 옵션을 사용하면 컨테이너에서 해당 마운트 경로를 읽기 전용으로 사용할 수 있다.
+
+---
+
+## 7.7 Bind Mount 프로젝트 파일 확인
+
+### 디렉터리 이동
+
+```bash
+cd ~/codisey1/docker-web-bind
+# Bind Mount 실습용 프로젝트 디렉터리로 이동
+```
+
+### 파일 구조 확인
+
+```bash
+ls -R
+# 현재 디렉터리와 하위 디렉터리의 파일 목록 확인
+```
+
+### 실제 프로젝트 구조
+
+```text
+docker-web-bind/
+└── html/
+    └── index.html
+```
+
+---
+
+## 7.8 Bind Mount 컨테이너 실행
+
+호스트의 HTML 디렉터리를 Nginx 컨테이너 내부 웹 디렉터리와 연결한다.
+
+### 실행 명령어
+
+```bash
+docker run -d \
+  --name codyssey-bind \
+  -p 8081:80 \
+  -v "$(pwd)/html:/usr/share/nginx/html:ro" \
+  nginx:alpine
+```
+
+### 명령어별 설명
+
+| 명령어 | 의미 |
+|---|---|
+| `docker run` | 컨테이너 생성 및 실행 |
+| `-d` | 백그라운드 실행 |
+| `--name codyssey-bind` | 컨테이너 이름 지정 |
+| `-p 8081:80` | 호스트 8081 포트와 컨테이너 80 포트 연결 |
+| `-v` | 호스트 디렉터리와 컨테이너 디렉터리 연결 |
+| `$(pwd)/html` | 현재 위치의 html 디렉터리 |
+| `/usr/share/nginx/html` | 컨테이너 내부 Nginx 웹 디렉터리 |
+| `:ro` | 읽기 전용으로 연결 |
+| `nginx:alpine` | 실행할 Docker 이미지 |
+
+### 명령어 사용 이유
+
+- `-d`: 터미널을 점유하지 않고 백그라운드에서 실행하기 위해 사용한다.
+- `-p`: 호스트와 컨테이너의 포트를 연결하기 위해 사용한다.
+- `-v`: 호스트의 HTML 파일을 컨테이너와 공유하기 위해 사용한다.
+- `$(pwd)`: 현재 작업 디렉터리의 실제 경로를 자동으로 가져오기 위해 사용한다.
+- `:ro`: 컨테이너에서 호스트 원본 파일을 수정하지 못하도록 읽기 전용으로 설정한다.
+
+### 컨테이너 실행 상태 확인
+
+```bash
+docker ps
+# 실행 중인 컨테이너 및 포트매핑 확인
+```
+
+### 실제 실행 결과
+
+| 컨테이너 | 이미지 | 호스트 포트 | 컨테이너 포트 | 상태 |
+|---|---|---|---|---|
+| codyssey-web | codyssey-web:v1 | 8080 | 80 | Up |
+| codyssey-bind | nginx:alpine | 8081 | 80 | Up |
+
+---
+
+## 7.9 Bind Mount 웹 서버 접속 테스트
+
+### 실행 명령어
+
+```bash
+curl -i http://localhost:8081
+# 호스트의 8081 포트로 HTTP 요청을 보내 Bind Mount 웹 서버 응답 확인
+```
+
+### 실제 실행 결과
+
+```text
+HTTP/1.1 200 OK
+Server: nginx/1.31.8
+Content-Type: text/html
+Content-Length: 866
+```
+
+### HTML 응답 확인
+
+```html
+<h1>Docker Bind Mount 성공!</h1>
+<h2>변경된 웹 페이지</h2>
+<p>호스트의 HTML 파일을 수정했습니다.</p>
+<p>현재 상태: AFTER</p>
+<p>Docker 이미지 재빌드 없이 변경 반영 완료!</p>
+```
+
+### 결과 분석
+
+| 항목 | 실제 결과 | 의미 |
+|---|---|---|
+| HTTP 상태 코드 | 200 OK | 웹 서버 정상 응답 |
+| 웹 서버 | nginx/1.31.8 | Nginx 실행 확인 |
+| 콘텐츠 유형 | text/html | HTML 문서 반환 |
+| 콘텐츠 크기 | 866 bytes | 응답 본문 크기 |
+| 페이지 상태 | AFTER | 수정된 HTML 내용 확인 |
+
+### 배운 점
+
+Bind Mount를 사용하면 호스트 PC의 HTML 파일을 컨테이너 내부 웹 서버와 공유할 수 있다.
+
+---
+
+## 7.10 Bind Mount 연결 정보 확인
+
+컨테이너의 상세 설정에서 실제 마운트 정보를 확인한다.
+
+### 실행 명령어
+
+```bash
+docker inspect codyssey-bind
+# 컨테이너의 상세 설정 및 마운트 정보 확인
+```
+
+필요한 마운트 정보만 확인하려면 다음 명령어를 사용한다.
+
+```bash
+docker inspect -f '{{json .Mounts}}' codyssey-bind
+# 컨테이너에 연결된 볼륨 및 Bind Mount 정보만 출력
+```
+
+### 실제 실행 결과
+
+```json
+[
+  {
+    "Type": "bind",
+    "Source": "/home/dksrlgusrnt7500/codisey1/docker-web-bind/html",
+    "Destination": "/usr/share/nginx/html",
+    "Mode": "ro",
+    "RW": false,
+    "Propagation": "rprivate"
+  }
+]
+```
+
+### 결과 분석
+
+| 항목 | 실제 결과 | 의미 |
+|---|---|---|
+| Type | bind | Bind Mount 방식 |
+| Source | /home/.../docker-web-bind/html | 호스트의 원본 디렉터리 |
+| Destination | /usr/share/nginx/html | 컨테이너 내부 연결 위치 |
+| Mode | ro | 읽기 전용 |
+| RW | false | 컨테이너에서 쓰기 불가능 |
+| IPAddress | 172.17.0.3 | codyssey-bind 컨테이너 IP |
+
+### Bind Mount와 Dockerfile COPY 비교
+
+| 구분 | Dockerfile COPY | Bind Mount |
+|---|---|---|
+| 파일 위치 | 이미지 내부에 복사 | 호스트와 컨테이너 연결 |
+| 파일 수정 | 이미지 재빌드 필요 | 호스트 파일 수정으로 반영 가능 |
+| 주요 용도 | 배포용 이미지 제작 | 개발 중 파일 공유 |
+| 데이터 관리 | 이미지에 포함 | 호스트 파일로 관리 |
+
+---
+
+# 8. 데이터 영속성(Data Persistence)
+
+## 8.1 데이터 영속성 개념
+
+데이터 영속성이란 컨테이너가 종료되거나 삭제되더라도 데이터를 유지하는 것을 의미한다.
+
+일반적으로 컨테이너 내부에 저장한 데이터는 컨테이너를 삭제하면 함께 사라질 수 있다.
+
+이를 방지하기 위해 Docker에서는 대표적으로 Bind Mount와 Docker Volume을 사용한다.
+
+### Docker 데이터 저장 구조
+
+```text
+Docker Host
+    │
+    ├── Container
+    │      └── 컨테이너 내부 데이터
+    │
+    ├── Bind Mount
+    │      └── 사용자가 지정한 호스트 디렉터리
+    │
+    └── Docker Volume
+           └── Docker가 관리하는 저장 공간
+```
+
+### Bind Mount와 Docker Volume 비교
+
+| 구분 | Bind Mount | Docker Volume |
+|---|---|---|
+| 저장 위치 | 사용자가 지정한 호스트 경로 | Docker가 관리하는 저장 공간 |
+| 관리 주체 | 사용자 | Docker |
+| 호스트에서 파일 접근 | 직접 가능 | 별도 경로 확인 필요 |
+| 컨테이너 삭제 후 데이터 | 호스트 파일 유지 | Volume 유지 |
+| 주요 용도 | 개발 및 파일 공유 | 데이터 영속성 및 운영 환경 |
+
+---
+
+## 8.2 Docker Volume 생성
+
+Docker에서 관리하는 독립적인 저장 공간을 생성한다.
+
+### 실행 명령어
 
 ```bash
 docker volume create codyssey-data
-# 명령어: docker volume create는 이름 있는 볼륨을 생성한다. 컨테이너와 별도로 데이터를 보존할 공간을 준비한다.
+# codyssey-data라는 이름의 Docker Volume 생성
+```
+
+### 생성 결과
+
+```text
+codyssey-data
+```
+
+### Volume 목록 확인
+
+```bash
+docker volume ls
+# 현재 생성된 Docker Volume 목록 확인
+```
+
+### 실제 실행 결과
+
+```text
+DRIVER    VOLUME NAME
+local     codyssey-data
+```
+
+### 배운 점
+
+- `docker volume`: Docker의 데이터 저장 공간 관리 명령어
+- `create`: 새로운 Volume 생성
+- `local`: Docker 호스트에서 관리하는 로컬 저장 방식
+- `codyssey-data`: 생성한 Volume 이름
+
+---
+
+## 8.3 Docker Volume을 컨테이너에 연결
+
+생성한 Volume을 Ubuntu 컨테이너에 연결한다.
+
+### 실행 명령어
+
+```bash
+docker run -it \
+  --name codyssey-volume \
+  -v codyssey-data:/data \
+  ubuntu bash
+```
+
+### 명령어별 설명
+
+| 명령어 | 의미 |
+|---|---|
+| `docker run` | 컨테이너 생성 및 실행 |
+| `-it` | 대화형 터미널 실행 |
+| `--name codyssey-volume` | 컨테이너 이름 지정 |
+| `-v codyssey-data:/data` | Docker Volume을 컨테이너의 /data에 연결 |
+| `ubuntu` | 사용할 이미지 |
+| `bash` | 컨테이너 내부 셸 실행 |
+
+### 핵심 개념
+
+```text
+Docker Volume                 Container
+codyssey-data  ────────────>  /data
+```
+
+`-v codyssey-data:/data`는 Docker가 관리하는 Volume을 컨테이너 내부의 `/data` 디렉터리에 연결한다.
+
+### 연결 상태 확인
+
+```bash
+pwd
+# 현재 컨테이너 내부 작업 디렉터리 확인
+
+ls -la
+# 현재 디렉터리의 파일 목록 확인
+
+ls -la /data
+# Volume이 연결된 /data 디렉터리 확인
+```
+
+---
+
+## 8.4 Volume에 데이터 저장
+
+연결된 Volume 내부에 파일을 생성하고 데이터를 저장한다.
+
+### 실행 명령어
+
+```bash
+echo "Docker Volume Persistence Test" > /data/test.txt
+# Volume 내부에 test.txt 파일 생성 및 문자열 저장
+
+cat /data/test.txt
+# 저장한 파일 내용 확인
+```
+
+### 실제 실행 결과
+
+```text
+Docker Volume Persistence Test
+```
+
+### 명령어 설명
+
+| 명령어 | 의미 |
+|---|---|
+| `echo` | 문자열 출력 |
+| `>` | 출력 결과를 파일에 기록 |
+| `/data/test.txt` | 데이터를 저장할 파일 경로 |
+| `cat` | 파일 내용 출력 |
+
+### 데이터 저장 구조
+
+```text
+Docker Volume
+    │
+    └── codyssey-data
+          │
+          └── /data
+                │
+                └── test.txt
+                     └── Docker Volume Persistence Test
+```
+
+### 배운 점
+
+컨테이너 내부의 `/data` 디렉터리에 파일을 생성했지만, 실제 데이터는 컨테이너와 독립적으로 관리되는 Docker Volume에 저장된다.
+
+---
+
+## 8.5 컨테이너 종료 및 삭제
+
+Volume에 저장한 데이터가 컨테이너 삭제 후에도 유지되는지 검증한다.
+
+### 1) 컨테이너 내부에서 빠져나오기
+
+```bash
+exit
+# Ubuntu 컨테이너 내부 셸 종료
+```
+
+### 2) 컨테이너 삭제
+
+```bash
+docker rm codyssey-volume
+# 종료된 컨테이너 삭제 (Docker Volume은 유지)
+```
+
+### 실제 실행 결과
+
+```text
+codyssey-volume
+```
+
+### 배운 점
+
+- `exit`: 컨테이너 내부 셸에서 빠져나온다.
+- `docker rm`: 컨테이너를 삭제한다.
+- 컨테이너 삭제와 Volume 삭제는 별개의 작업이다.
+- Volume을 별도로 삭제하지 않았다면 저장된 데이터는 유지된다.
+
+---
+
+## 8.6 Volume 데이터 영속성 검증
+
+기존 컨테이너를 삭제한 후 새로운 컨테이너를 생성하여 기존 Volume을 다시 연결한다.
+
+### 새로운 컨테이너 실행
+
+```bash
 docker run -it \
   --name codyssey-volume-test \
   -v codyssey-data:/data \
   ubuntu bash
-# 사용 이유: Ubuntu 컨테이너에 접속해 볼륨에 데이터를 기록한다.
-# -v 호스트볼륨:컨테이너경로 형식으로 볼륨을 연결한다. -it는 대화형 터미널, --name은 컨테이너 이름을 지정한다.
+# 기존 codyssey-data Volume을 새로운 컨테이너의 /data에 연결
 ```
 
-**데이터 저장**
+### 기존 데이터 확인
 
 ```bash
-cd /data  # 사용 이유: 볼륨 마운트 경로로 이동한다.
-echo "Docker Volume 데이터 보존 실습 성공!" > test.txt  # 사용 이유: 확인할 텍스트를 볼륨에 기록한다. >는 파일을 새로 만들거나 기존 내용을 덮어쓴다.
-cat test.txt  # 사용 이유: 기록된 내용을 확인한다.
+cat /data/test.txt
+# 기존 Volume에 저장했던 파일 내용 확인
 ```
 
-**컨테이너 삭제 및 데이터 검증**
+### 실제 실행 결과
+
+```text
+Docker Volume Persistence Test
+```
+
+### 검증 과정
+
+```text
+1. Docker Volume 생성
+       ↓
+2. 첫 번째 컨테이너 생성
+       ↓
+3. /data/test.txt 파일 생성
+       ↓
+4. 첫 번째 컨테이너 삭제
+       ↓
+5. 새로운 컨테이너 생성
+       ↓
+6. 기존 Volume 재연결
+       ↓
+7. 기존 파일 내용 확인
+       ↓
+   데이터 유지 성공
+```
+
+### 배운 점
+
+컨테이너를 삭제하고 새로운 컨테이너를 생성하더라도 기존 Docker Volume을 다시 연결하면 저장된 데이터를 그대로 사용할 수 있다.
+
+즉, 컨테이너의 생명주기와 Volume의 생명주기는 독립적이다.
+
+---
+
+## 8.7 Docker Volume 관리 명령어
+
+| 명령어 | 기능 |
+|---|---|
+| `docker volume create` | Volume 생성 |
+| `docker volume ls` | Volume 목록 확인 |
+| `docker volume inspect` | Volume 상세 정보 확인 |
+| `docker volume rm` | Volume 삭제 |
+| `docker volume prune` | 사용하지 않는 Volume 정리 |
+
+### 주의 사항
+
+- `docker volume rm`: 지정한 Volume과 저장된 데이터를 삭제할 수 있다.
+- `docker volume prune`: 사용하지 않는 Volume을 정리하며 데이터가 삭제될 수 있다.
+- 중요한 데이터가 저장된 Volume은 삭제 전에 반드시 확인해야 한다.
+
+---
+
+## 8.8 Bind Mount와 Docker Volume 최종 비교
+
+| 구분 | Bind Mount | Docker Volume |
+|---|---|---|
+| 저장 위치 | 사용자가 지정한 호스트 경로 | Docker 관리 영역 |
+| 생성 방식 | `-v 호스트경로:컨테이너경로` | `docker volume create` |
+| 관리 주체 | 사용자 | Docker |
+| 컨테이너 삭제 후 데이터 | 호스트 파일 유지 | Volume 유지 |
+| 주요 목적 | 개발 중 파일 공유 | 데이터 영속성 및 운영 환경 |
+
+### 핵심 개념
+
+**Bind Mount**
+- 호스트의 특정 디렉터리를 컨테이너 내부와 연결
+- 호스트에서 파일을 직접 수정하고 관리
+- 개발 과정에서 파일 공유에 유용
+
+**Docker Volume**
+- Docker가 독립적으로 관리하는 저장 공간
+- 컨테이너와 별도로 데이터 유지
+- 컨테이너 삭제 후에도 데이터를 보존하는 데 유용
+
+---
+
+## 8.9 실습 환경 정리
+
+검증용 컨테이너를 삭제하고 Volume이 유지되는지 확인한다.
+
+먼저 현재 실행 중인 컨테이너 내부에서 빠져나온다.
 
 ```bash
-docker rm codyssey-volume-test  # 명령어: docker rm은 컨테이너를 삭제한다. 볼륨은 남겨 두고 첫 컨테이너만 제거해 보존 여부를 확인한다.
-docker run -it \
-  --name codyssey-volume-check \
-  -v codyssey-data:/data \
-  ubuntu bash
-# 사용 이유: 같은 볼륨을 새 컨테이너에 연결해 이전 파일이 남아 있는지 검증한다.
-cd /data  # 사용 이유: 새 컨테이너에서 볼륨이 연결된 위치로 이동한다.
-ls -l  # 명령어: ls -l은 파일 목록을 상세 형식으로 표시한다. 이전 파일 보존 여부를 확인한다.
-cat test.txt  # 사용 이유: 이전에 저장한 파일의 내용이 유지됐는지 확인한다.
+exit
+# Ubuntu 컨테이너 내부 셸 종료
 ```
 
-**검증 결과**
+호스트 터미널에서 다음 명령어를 실행한다.
 
-- 기존 컨테이너 삭제 완료
-- 새로운 컨테이너에서 기존 `test.txt` 파일 확인
-- 저장된 데이터가 그대로 유지됨
-- Volume 확인 명령어: `docker volume inspect codyssey-data`는 지정한 볼륨의 상세 정보를 출력한다. 볼륨 설정과 연결 정보를 확인할 때 사용한다.
+```bash
+docker rm codyssey-volume-test
+# 데이터 검증용 컨테이너 삭제 (Volume은 유지)
 
-**결론:** 컨테이너를 삭제하더라도 Docker Volume을 삭제하지 않으면 데이터가 유지됨을 확인하였다.
+docker volume ls
+# codyssey-data Volume이 남아 있는지 확인
+```
+
+※ `codyssey-data`는 다음 실습에서도 사용할 수 있으므로 삭제하지 않는다.
+
+---
+
+## 7~8단계 최종 실습 결과
+
+| 단계 | 실습 내용 | 결과 |
+|---|---|---|
+| 7.1 | Docker 포트매핑 개념 이해 | 완료 |
+| 7.2 | 컨테이너 및 포트매핑 확인 | 완료 |
+| 7.3 | HTTP 통신 검증 | 완료 |
+| 7.4 | Docker 네트워크 목록 확인 | 완료 |
+| 7.5 | bridge 네트워크 및 IP 확인 | 완료 |
+| 7.6 | Bind Mount 개념 이해 | 완료 |
+| 7.7 | 프로젝트 파일 구조 확인 | 완료 |
+| 7.8 | Bind Mount 컨테이너 실행 | 완료 |
+| 7.9 | Bind Mount HTTP 접속 테스트 | 완료 |
+| 7.10 | Bind Mount 상세 정보 확인 | 완료 |
+| 8.1 | 데이터 영속성 개념 이해 | 완료 |
+| 8.2 | Docker Volume 생성 | 완료 |
+| 8.3 | Volume 컨테이너 연결 | 완료 |
+| 8.4 | Volume에 데이터 저장 | 완료 |
+| 8.5 | 기존 컨테이너 삭제 | 완료 |
+| 8.6 | 새 컨테이너에서 데이터 확인 | 완료 |
+
+### 이번 실습의 핵심 학습 내용
+
+1. Docker 포트매핑을 통해 호스트와 컨테이너 간 네트워크 통신 구조를 이해했다.
+2. `curl`을 이용해 실제 HTTP 요청과 응답을 확인했다.
+3. Docker의 bridge 네트워크와 컨테이너 IP 주소를 확인했다.
+4. Bind Mount를 이용해 호스트와 컨테이너 간 파일 공유를 실습했다.
+5. Docker Volume을 생성하고 컨테이너 내부에 데이터를 저장했다.
+6. 기존 컨테이너를 삭제하고 새로운 컨테이너에서 데이터를 확인하여 데이터 영속성을 검증했다.
+
+### 최종 실습 흐름
+
+```text
+Docker 포트매핑
+       ↓
+호스트와 컨테이너 간 통신
+       ↓
+HTTP 응답 검증
+       ↓
+Docker 네트워크 확인
+       ↓
+컨테이너 IP 주소 확인
+       ↓
+Bind Mount 파일 공유
+       ↓
+Docker Volume 생성
+       ↓
+컨테이너에 데이터 저장
+       ↓
+컨테이너 삭제
+       ↓
+새 컨테이너에서 기존 데이터 확인
+       ↓
+데이터 영속성 검증 성공
+```
 
 
 ---
 
 ## 9. Git 및 GitHub 버전 관리
+
+### Git 버전 관리 실습
+
+- Git add 실습
+- Git commit 실습
+- Git push 실습
 
 ### 9.1 Git 환경 확인
 
