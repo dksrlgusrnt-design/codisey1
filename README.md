@@ -1484,190 +1484,393 @@ Docker Volume 생성
 
 ---
 
+
 ## 9. Git 및 GitHub 버전 관리
 
-### Git 버전 관리 실습
+Git을 이용하여 프로젝트의 변경 사항을 관리하고 GitHub 원격 저장소에 업로드하는 과정을 실습한다.
 
-- Git add 실습
-- Git commit 실습
-- Git push 실습
+### 9.1 Git과 GitHub의 개념
 
-### 9.1 Git 환경 확인
+- Git: 소스 코드 및 파일의 변경 이력을 관리하는 분산 버전 관리 시스템
+- GitHub: Git으로 관리하는 프로젝트를 온라인에 저장하고 공유할 수 있는 플랫폼
+- Repository(저장소): 프로젝트 파일과 변경 이력을 저장하는 공간
+- Commit: 변경 사항을 하나의 버전으로 기록하는 작업
+- Push: 로컬 저장소의 커밋을 원격 저장소에 업로드하는 작업
+- Pull: 원격 저장소의 변경 사항을 로컬 저장소로 가져와 통합하는 작업
 
-```bash
-git --version
-git config --global user.name
-# 명령어: git config --global은 사용자 전체에 적용되는 Git 설정을 조회/변경한다. user.name은 커밋 작성자 이름이다.
-# 사용 이유: 커밋에 기록될 작성자 설정을 확인한다.
-git config --global init.defaultBranch  # 명령어: init.defaultBranch는 새 저장소에서 사용할 기본 브랜치 설정이다.
-git status  # 명령어: git status는 작업 트리와 스테이징 상태를 보여준다. 저장소 변경 여부를 확인한다.
-git remote -v  # 명령어: git remote -v는 원격 저장소 별칭과 주소를 보여준다. 원격 연결 여부를 확인한다.
-```
+### 9.2 Git 저장소 상태 확인
 
-현재 확인된 설정:
-
-| 항목 | 확인 결과 |
-|---|---|
-| Git 버전 | 2.53.0 |
-| 사용자 이름 | anki |
-| 기본 브랜치 | main |
-| 원격 저장소 | 추가 확인 필요 |
-
-### 9.2 Git 기본 작업 흐름
+프로젝트 디렉터리로 이동하여 현재 Git 저장소의 상태를 확인한다.
 
 ```bash
-git init  # 명령어: git init은 현재 폴더를 로컬 Git 저장소로 초기화한다.
-git add README.md  # 명령어: git add는 변경 파일을 다음 커밋에 포함하도록 스테이징한다.
-git commit -m "Initial commit"  # 명령어: git commit은 스테이징된 변경을 이력으로 저장한다. -m은 커밋 메시지를 지정한다.
-git log --oneline  # 명령어: git log는 커밋 이력을 표시한다. --oneline은 한 커밋을 한 줄로 요약한다.
+cd ~/codisey1                 # Git 프로젝트 디렉터리로 이동한다.
+
+git status                    # 현재 브랜치와 파일의 변경 및 스테이징 상태를 확인한다.
+git log --oneline             # 커밋 이력을 한 줄씩 간략하게 확인한다.
+git remote -v                 # 연결된 원격 저장소의 주소와 fetch/push 경로를 확인한다.
 ```
 
-Git은 로컬 버전 관리 도구이며 GitHub은 원격 저장소 및 협업 플랫폼이다.
+### 확인 결과
 
-### 9.3 개념 설명서
+- 현재 브랜치: main
+- 원격 저장소: origin
+- GitHub 주소: https://github.com/dksrlgusrnt-design/codisey1.git
+- 로컬 저장소와 원격 저장소가 연결되어 있는 것을 확인하였다.
+- `git status` 실행 결과 `working tree clean`으로 변경 사항이 없는 상태를 확인하였다.
 
-#### 절대 경로와 상대 경로
+### 9.3 Git 변경 사항 등록 및 Commit
 
-- **절대 경로**는 파일 시스템의 기준점(`/`)부터 목적지까지 적은 전체 경로다. 현재 어느 폴더에 있든 같은 위치를 가리킨다. 예: `/home/anki/codyssey-practice/terminal-test/test.txt`.
-- **상대 경로**는 현재 작업 디렉터리(`pwd`로 확인)에서 목적지까지 적는다. 위 실습 폴더 안에 있을 때 `test.txt`는 파일을 가리키고, `../other/file.txt`는 상위 폴더로 올라간 뒤 이동한다. `.`은 현재 폴더, `..`은 부모 폴더다.
-- `~/...`는 셸이 현재 사용자의 홈 디렉터리로 확장하는 표기다. 예를 들어 `/home/anki`가 홈이면 `~/codyssey-practice`는 `/home/anki/codyssey-practice`와 같다. `realpath test.txt`는 상대 경로를 확인 가능한 절대 경로로 바꿔 보여준다.
+README.md에 Git 버전 관리 실습 내용을 추가하고 변경 사항을 로컬 저장소에 기록한다.
 
-#### 파일 권한: r, w, x와 숫자 표기
+```bash
+git status                    # 수정된 파일이 있는지 확인한다.
 
-Linux 권한은 소유자(user), 그룹(group), 그 외 사용자(others) 각각에 대해 읽기(`r`), 쓰기(`w`), 실행(`x`) 여부를 정한다. 숫자 표기는 각 자리에서 `r=4`, `w=2`, `x=1`을 더한 값이다.
+git add README.md             # 수정된 README.md 파일을 Staging Area에 등록한다.
 
-| 숫자 | 권한 | 뜻 |
+git status                    # Staging Area에 정상적으로 등록되었는지 확인한다.
+
+git commit -m "Git 버전 관리 실습"  # 스테이징된 변경 사항을 하나의 커밋으로 기록한다.
+
+git log -1 --oneline          # 가장 최근에 생성된 커밋 이력을 확인한다.
+```
+
+### 실행 결과
+
+```text
+[main 8012d5a] Git 버전 관리 실습
+1 file changed, 1205 insertions(+), 173 deletions(-)
+
+8012d5a (HEAD -> main) Git 버전 관리 실습
+```
+
+- 커밋 ID: `8012d5a`
+- 커밋 메시지: `Git 버전 관리 실습`
+- README.md 변경 사항을 로컬 저장소에 기록하였다.
+
+### 9.4 GitHub 원격 저장소에 Push
+
+로컬 저장소에 기록한 커밋을 GitHub 원격 저장소에 업로드한다.
+
+```bash
+git push origin main           # origin 원격 저장소의 main 브랜치로 커밋을 업로드한다.
+```
+
+### 실행 결과
+
+```text
+To https://github.com/dksrlgusrnt-design/codisey1.git
+   6109d5b..8012d5a  main -> main
+```
+
+- GitHub 원격 저장소에 Push 성공
+- 로컬 저장소의 커밋이 원격 저장소에 반영된 것을 확인하였다.
+
+### 9.5 Git 변경 이력 비교 및 확인
+
+커밋 전후의 README.md 변경 사항과 파일별 변경량을 확인한다.
+
+```bash
+git show --stat HEAD
+# 가장 최근 커밋에서 변경된 파일과 추가 및 삭제된 줄 수를 확인한다.
+
+git show --format= -- README.md | head -n 80
+# 최근 커밋에서 README.md의 변경 내용을 앞부분 80줄까지 확인한다.
+
+git diff HEAD~1 HEAD -- README.md
+# 직전 커밋과 현재 커밋 사이의 README.md 변경 내용을 비교한다.
+```
+
+### 확인 결과
+
+```text
+README.md | 1378 ++++++++++++++++++++++++++++++++++++++++++++++++++--------
+1 file changed, 1205 insertions(+), 173 deletions(-)
+```
+
+- README.md 변경 내용이 대량으로 수정된 것을 확인하였다.
+- 기존 Docker 실습 내용 일부가 새로운 형식으로 재작성되었다.
+- 변경된 README.md 버전을 유지하고 GitHub에 업로드하였다.
+
+### 9.6 Git 버전 관리 실습을 통해 배운 점
+
+- `git status`: 현재 파일의 변경 및 스테이징 상태 확인
+- `git add`: 변경된 파일을 Staging Area에 등록
+- `git commit`: 변경 사항을 로컬 저장소에 기록
+- `git log`: 커밋 이력 확인
+- `git remote -v`: 원격 저장소 연결 정보 확인
+- `git push`: 로컬 저장소의 변경 사항을 GitHub에 업로드
+- `git diff`: 커밋 간 변경 내용 비교
+
+Git은 단순히 파일을 저장하는 도구가 아니라 프로젝트의 변경 이력을 기록하고 관리하는 버전 관리 시스템임을 이해하였다.
+
+---
+
+## 10. Troubleshooting (문제 해결)
+
+Docker 및 Git 실습 과정에서 발생한 오류를 확인하고 원인을 분석하여 해결하는 과정을 학습한다.
+
+### 10.1 Troubleshooting의 기본 개념
+
+Troubleshooting은 시스템이나 프로그램에서 발생한 문제의 원인을 파악하고 해결하는 과정이다.
+
+문제 발생 시 다음 순서로 접근한다.
+
+1. 오류 메시지 확인
+2. 문제 발생 위치 확인
+3. 현재 시스템 상태 확인
+4. 오류 원인 분석 및 조치
+5. 정상 작동 여부 재검증
+
+### 10.2 Docker 컨테이너 상태 확인
+
+전체 컨테이너와 로컬 이미지 목록을 확인하여 Docker 환경의 현재 상태를 파악한다.
+
+```bash
+docker ps -a                  # 실행 중인 컨테이너와 종료된 컨테이너 전체 목록을 확인한다.
+
+docker images                 # 로컬에 저장된 Docker 이미지 목록을 확인한다.
+```
+
+### 확인 결과
+
+| 컨테이너 | 이미지 | 상태 | 포트 |
+|---|---|---|---|
+| codyssey-bind | nginx:alpine | Up | 8081:80 |
+| codyssey-web | codyssey-web:v1 | Up | 8080:80 |
+| codyssey-ubuntu | ubuntu | Exited (0) | - |
+| wonderful_allen | hello-world | Exited (0) | - |
+
+- `Up`: 컨테이너가 실행 중인 상태
+- `Exited (0)`: 오류 없이 정상 종료된 상태
+- `Exited (1)`: 일반적으로 오류로 종료된 상태
+- Docker 이미지와 컨테이너의 상태를 구분하여 확인하였다.
+
+### 10.3 Docker 컨테이너 로그 확인
+
+컨테이너 내부에서 실행되는 프로그램의 로그를 확인하여 정상 작동 여부와 오류 발생 원인을 분석한다.
+
+```bash
+docker logs codyssey-web       # codyssey-web 컨테이너의 실행 로그와 접속 기록을 확인한다.
+```
+
+### 확인 결과
+
+- Nginx 1.31.8 정상 실행 확인
+- Nginx 설정 완료 및 Worker Process 실행 확인
+- 웹페이지 접속 기록에서 HTTP 200 응답 확인
+- 브라우저의 favicon.ico 요청에서 HTTP 404 오류 발견
+
+**발견된 오류**
+
+```text
+GET /favicon.ico HTTP/1.1 404
+open() "/usr/share/nginx/html/favicon.ico" failed
+```
+
+**오류 원인 및 분석**
+
+- 브라우저에서 웹사이트 아이콘 파일인 favicon.ico를 요청하였다.
+- 컨테이너 내부 웹 디렉터리에 해당 파일이 없어 404 오류가 발생하였다.
+- 메인 웹페이지는 HTTP 200으로 정상 응답하였으므로 웹 서버 전체 장애는 아닌 것으로 판단하였다.
+
+### 10.4 Docker 컨테이너 상세 정보 확인
+
+컨테이너의 실행 상태, 네트워크, 포트 매핑, 볼륨 등의 상세 정보를 확인한다.
+
+```bash
+docker inspect codyssey-web     # codyssey-web 컨테이너의 전체 설정 및 상세 정보를 확인한다.
+```
+
+### 확인 결과
+
+- Status: running
+- Running: true
+- RestartCount: 0
+- NetworkMode: bridge
+- HostPort: 8080
+- Container IP: 172.17.0.2
+- Mounts: []
+
+### 10.5 Docker Inspect를 활용한 세부 정보 조회
+
+`docker inspect`의 `-f` 옵션과 Go Template 문법을 활용하여 필요한 정보만 선택적으로 출력한다.
+
+```bash
+docker inspect -f '{{.State.Status}}' codyssey-web
+# 컨테이너의 현재 실행 상태를 확인한다.
+
+docker inspect -f '{{.NetworkSettings.IPAddress}}' codyssey-web
+# 컨테이너 IP 주소를 조회한다. 네트워크 구조에 따라 경로가 다를 수 있다.
+
+docker inspect -f '{{json .NetworkSettings.Ports}}' codyssey-web
+# 컨테이너의 포트 매핑 정보를 JSON 형식으로 출력한다.
+```
+
+### 발생 오류 및 원인 분석
+
+처음 IP 주소를 조회할 때 다음 오류가 발생하였다.
+
+```text
+template parsing error:
+map has no entry for key "IPAddress"
+```
+
+**오류 원인**
+
+- `.NetworkSettings.IPAddress` 경로에 IP 주소가 존재하지 않았다.
+- 실제 IP 주소는 `.NetworkSettings.Networks.bridge.IPAddress` 경로에 위치하였다.
+
+**수정한 명령어**
+
+```bash
+docker inspect -f '{{.NetworkSettings.Networks.bridge.IPAddress}}' codyssey-web
+# Bridge 네트워크 내부에 저장된 컨테이너 IP 주소를 조회한다.
+```
+
+### 최종 실행 결과
+
+```text
+172.17.0.2
+```
+
+정확한 데이터 경로를 지정하여 컨테이너 IP 주소를 정상적으로 확인하였다.
+
+### 10.6 Troubleshooting 실습 중 발생한 주요 오류 정리
+
+| 발생 오류 | 원인 | 해결 방법 |
 |---|---|---|
-| 7 | `rwx` (4+2+1) | 읽기, 쓰기, 실행 |
-| 5 | `r-x` (4+1) | 읽기, 실행 |
-| 6 | `rw-` (4+2) | 읽기, 쓰기 |
-| 4 | `r--` | 읽기만 |
+| Docker Engine 연결 실패 | Docker Desktop과 WSL2 간 연결 문제 | Docker Desktop 실행 및 WSL 연동 상태 확인 |
+| `FROM: command not found` | Dockerfile 명령어를 터미널에서 실행 | Dockerfile에 명령어 작성 후 이미지 빌드 |
+| Container name Conflict | 동일한 이름의 컨테이너가 이미 존재 | 기존 컨테이너 상태 확인 후 재사용 |
+| `-v: command not found` | 컨테이너 내부에서 Docker 실행 옵션 입력 | 호스트 터미널에서 `docker run` 실행 |
+| `nothing to commit` | 변경 사항이 없거나 Staging되지 않은 상태 | 파일 수정 후 `git add` 실행 |
+| `untracked files` | Git이 추적하지 않는 파일 존재 | `git add`로 파일 등록 |
+| `favicon.ico 404` | 웹 디렉터리에 아이콘 파일이 없음 | favicon.ico 파일 추가 |
+| `IPAddress` 조회 오류 | 잘못된 Go Template 데이터 경로 사용 | `.NetworkSettings.Networks.bridge.IPAddress`로 수정 |
 
-`chmod 755 파일`의 세 자리는 순서대로 소유자/그룹/그 외 사용자를 뜻하므로 `rwxr-xr-x`가 된다. `chmod 644 파일`은 `rw-r--r--`로, 소유자는 읽고 쓸 수 있고 나머지는 읽을 수만 있다. 디렉터리에서 `x`는 그 안의 항목에 접근하거나 경로를 통과할 수 있는 권한을 뜻한다. 따라서 디렉터리에 보통 `755`, 일반 텍스트 파일에 `644`를 사용한다. `chmod`는 이 권한 비트를 바꾸며, 파일 소유자나 시스템 정책에 따라 변경이 제한될 수 있다.
+### 10.7 Troubleshooting 실습을 통해 배운 점
 
-#### Docker 커스텀 이미지
+- 오류 메시지를 확인하면 문제 발생 위치와 원인을 파악하는 데 도움이 된다.
+- `docker ps -a`와 `docker images`를 활용하여 컨테이너와 이미지의 상태를 구분할 수 있다.
+- `docker logs`를 이용하여 컨테이너 내부 프로그램의 실행 및 접속 기록을 확인할 수 있다.
+- `docker inspect`를 이용하여 컨테이너의 세부 설정과 네트워크 정보를 확인할 수 있다.
+- Go Template 문법을 활용하면 전체 정보 중 필요한 항목만 선택적으로 조회할 수 있다.
+- 오류가 발생했을 때 무조건 명령어를 반복 실행하는 것이 아니라 현재 상태와 데이터 구조를 먼저 확인하는 것이 중요하다.
 
-이미지는 컨테이너 생성의 바탕이 되는 실행 환경과 파일의 묶음이고, 컨테이너는 그 이미지로 실행한 인스턴스다. 기존 이미지를 `FROM`으로 지정한 Dockerfile에 필요한 설정이나 파일을 더하고 `docker build -t 이름:태그 .`를 실행하면 커스텀 이미지를 만들 수 있다. 여기서 `.`은 현재 디렉터리를 빌드 입력(빌드 컨텍스트)으로 전달한다. 이 실습에서는 `nginx:alpine`을 바탕으로 HTML을 복사해 `codyssey-web:v1`을 만들었다. 이후 이 이미지로 컨테이너를 여러 번 실행할 수 있다.
+실습을 통해 Docker 및 Git 환경에서 발생할 수 있는 오류의 원인을 분석하고, 명령어를 활용하여 문제를 진단하는 기본적인 Troubleshooting 방법을 익혔다.
 
-#### 포트 매핑이 필요한 이유
-
-컨테이너의 네트워크는 호스트와 구분되어 있으므로, 컨테이너 안에서 NGINX가 80번 포트로 대기해도 호스트 브라우저에서 자동으로 접근할 수 있는 것은 아니다. `-p 8080:80`은 **호스트 포트:컨테이너 포트** 순서로 연결을 만들어 `http://localhost:8080` 요청을 컨테이너의 80번으로 전달한다. Dockerfile의 `EXPOSE 80`은 사용 포트를 문서화하는 설정이며, 실제 호스트 연결은 `docker run -p`가 만든다.
-
-#### Docker 볼륨과 데이터 영속성
-
-컨테이너 내부 파일 시스템에만 저장한 데이터는 컨테이너를 제거할 때 함께 사라질 수 있다. Docker Volume은 컨테이너와 별도로 관리되는 저장 공간이다. `-v codyssey-data:/data`처럼 연결하면 컨테이너의 `/data`를 볼륨에 연결한다. 해당 컨테이너를 삭제하고 새 컨테이너에 같은 볼륨을 다시 붙여도 파일이 남아 있어 데이터베이스 파일이나 업로드 파일처럼 실행 인스턴스보다 오래 보존할 데이터에 적합하다. 볼륨 자체를 `docker volume rm`으로 삭제하면 그 안의 데이터도 제거된다.
-
-바인드 마운트는 호스트의 특정 경로를 컨테이너에 직접 연결한다(예: `-v ./html:/usr/share/nginx/html:ro`). 호스트에서 파일을 편집하면 컨테이너에서도 바로 보이므로 개발 중 소스 공유에 편리하다. Volume은 Docker가 관리하는 저장 공간이고, 바인드 마운트는 사용자가 지정한 호스트 경로라는 차이가 있다.
-
-#### Git과 GitHub의 역할
-
-**Git**은 내 컴퓨터에서 파일 변경 이력을 기록하고 비교·되돌리는 버전 관리 도구다. `git init`, `git add`, `git commit`, `git log`는 로컬 저장소 안에서 동작하므로 GitHub 계정이나 인터넷이 없어도 이력을 관리할 수 있다. **GitHub**은 Git 저장소를 원격 서버에 보관하고 다른 사람과 공유·협업하도록 제공하는 플랫폼이다. `git remote`로 원격 주소를 연결하고 `git push`로 커밋을 올리면 다른 컴퓨터나 협업자가 접근할 수 있다. 즉 Git이 이력을 관리하는 도구이고 GitHub은 그 저장소를 원격에 호스팅하고 협업 기능을 제공하는 서비스다.
-
-원격 저장소 연결이 확인된 후 업로드한다.
-
-```bash
-git remote -v  # 사용 이유: origin 원격 저장소 주소가 설정되어 있는지 확인한다.
-git push -u origin main
-# 명령어: git push는 로컬 커밋을 원격 저장소로 보낸다. -u는 이후 기본 추적 관계를 설정한다.
-# 사용 이유: 원격 연결을 확인한 뒤 main 브랜치를 GitHub에 업로드한다.
-```
 
 ---
 
-## 10. 트러블슈팅 (Troubleshooting)
-
-### Case 01. Docker와 WSL2 연결 오류
-
-**문제**
-
-Docker 명령 실행 시 Docker Engine에 연결하지 못하는 오류가 발생하였다.
-
-```text
-failed to connect to the docker API
-The system cannot find the file specified.
-```
-
-**원인 가설**
-
-WSL2 내부에서 Docker Desktop의 CLI 연동 경로 및 Docker Engine 연결이 정상적으로 제공되지 않는 상태로 판단하였다.
-
-**확인 과정**
-
-```bash
-docker context show  # 사용 이유: 현재 Docker 연결 대상을 확인해 오류 상황을 진단한다.
-docker version  # 사용 이유: Docker Server가 응답하는지 확인한다.
-ls -l /usr/bin/docker  # 명령어: ls -l은 파일 상세 목록을 표시한다. /usr/bin/docker의 존재와 권한을 점검한다.
-```
-
-초기에는 Docker CLI의 연결 경로가 정상적으로 작동하지 않았으며, WSL Docker Desktop 연동 경로도 확인되지 않았다.
-
-**해결 및 검증**
-
-이후 Docker Desktop과 WSL2 연동이 복구된 상태에서 다음 결과를 확인하였다.
-
-```text
-Docker version 29.9.2
-OS/Arch: linux/amd64
-Server: Docker Desktop 4.98.0
-```
-
-※ 정확한 설정 변경 원인은 추가 확인이 필요하다.
-
-### Case 02. Git 저장소 외부에서 commit 실행
-
-**문제**
-
-Git 저장소가 아닌 디렉터리에서 commit 명령어를 실행하여 오류가 발생하였다.
-
-```text
-fatal: not a git repository (or any of the parent directories): .git
-```
-
-**원인**
-
-현재 작업 디렉터리가 Git 저장소로 초기화된 폴더 내부가 아니었다.
-
-**해결 방법**
-
-기존 저장소 위치를 확인한 후 해당 디렉터리로 이동하여 Git 명령어를 실행한다.
-
-```bash
-pwd  # 사용 이유: 현재 작업 디렉터리를 확인한다.
-find ~ -maxdepth 5 -type d -name .git -print
-# 명령어: find는 조건에 맞는 경로를 검색한다. -maxdepth는 깊이 제한, -type d는 디렉터리만, -name은 이름 조건, -print는 경로 출력이다.
-# 사용 이유: 홈 아래에서 기존 .git 저장소 위치를 찾는다.
-cd 저장소_경로  # 사용 이유: 찾은 저장소 폴더로 이동한다. 저장소_경로는 실제 경로로 바꿔 입력한다.
-git status  # 사용 이유: 저장소 안에서 변경 상태를 확인해 올바른 위치인지 검증한다.
-```
-
----
 
 ## 11. 학습 내용 및 결과
 
-1. Linux 터미널의 기본 명령어를 사용하여 파일과 디렉터리를 생성, 복사, 이동 및 삭제할 수 있다.
-2. chmod를 통해 파일과 디렉터리의 권한을 설정하고 확인할 수 있다.
-3. Docker 이미지와 컨테이너의 차이 및 기본 실행 구조를 이해하였다.
-4. Docker Client와 Server의 연결 상태를 확인하고 컨테이너를 관리하는 방법을 학습하였다.
-5. Git은 로컬에서 변경 이력을 관리하며 GitHub은 원격 저장소로 활용된다는 점을 이해하였다.
+이번 실습을 통해 Linux 기반 개발 환경을 구축하고 Docker를 활용한 컨테이너 운영, Git/GitHub를 이용한 버전 관리 및 문제 해결 방법을 학습하였다.
 
-※ 미완료 실습은 진행 후 결과를 추가한다.
+### 11.1 Linux 및 개발 환경 구축
+
+1. Windows 11 환경에서 WSL2 Ubuntu와 VS Code를 연동하여 개발 작업 환경을 구축하였다.
+2. Linux 터미널의 기본 명령어를 사용하여 파일과 디렉터리를 생성, 복사, 이동 및 삭제할 수 있다.
+3. `pwd`, `ls`, `cd` 등의 명령어를 활용하여 작업 위치와 파일 구조를 확인할 수 있다.
+4. `chmod` 명령어를 통해 파일과 디렉터리의 접근 권한을 설정하고 확인할 수 있다.
+5. 터미널과 CLI의 개념 및 명령어 기반 개발 환경의 기본 구조를 이해하였다.
+
+### 11.2 Docker 설치 및 컨테이너 운영
+
+1. Docker Desktop과 WSL2 Ubuntu를 연동하고 Docker Client와 Docker Engine의 정상 연결 상태를 확인하였다.
+2. `docker run hello-world` 명령어를 통해 Docker 설치 및 컨테이너 실행 환경이 정상적으로 작동하는 것을 확인하였다.
+3. Ubuntu 컨테이너를 생성하고 내부에서 Linux 명령어를 실행하며 컨테이너 환경을 경험하였다.
+4. Docker Image와 Container의 차이 및 이미지 기반 컨테이너 생성·실행 구조를 이해하였다.
+5. `docker ps`, `docker ps -a`, `docker images` 등의 명령어를 활용하여 컨테이너와 이미지의 상태를 확인하고 관리할 수 있다.
+
+### 11.3 Dockerfile 및 사용자 정의 이미지 제작
+
+1. Dockerfile의 기본 구조와 `FROM`, `COPY`, `EXPOSE` 명령어의 역할을 이해하였다.
+2. Nginx 기반 Dockerfile을 작성하고 HTML 파일을 이미지 내부에 복사하는 방법을 실습하였다.
+3. `docker build` 명령어를 사용하여 사용자 정의 이미지 `codyssey-web:v1`을 생성하였다.
+4. 생성한 이미지를 이용하여 Nginx 웹 서버 컨테이너를 실행하고 브라우저 접속을 통해 웹페이지가 정상적으로 출력되는 것을 확인하였다.
+5. Dockerfile을 활용하면 컨테이너 실행 환경을 반복적으로 생성할 수 있음을 이해하였다.
+
+### 11.4 Docker 포트 매핑 및 네트워크
+
+1. Docker의 포트 매핑 개념과 호스트 포트 및 컨테이너 포트의 차이를 이해하였다.
+2. `-p 8080:80` 설정을 통해 호스트의 8080 포트와 컨테이너의 80 포트를 연결하였다.
+3. `docker port` 명령어를 활용하여 컨테이너의 포트 연결 상태를 확인하였다.
+4. `docker network ls`, `docker network inspect` 명령어를 통해 Docker 기본 네트워크 구조를 확인하였다.
+5. Bridge 네트워크의 Subnet, Gateway 및 컨테이너 IP 주소를 확인하였다.
+6. `curl` 명령어를 이용하여 localhost 접속 및 HTTP 200 응답을 확인하였다.
+
+### 11.5 Bind Mount 및 데이터 영속성
+
+1. Bind Mount의 개념과 호스트 디렉터리를 컨테이너 내부 경로에 연결하는 방법을 학습하였다.
+2. `-v` 옵션을 활용하여 호스트의 HTML 디렉터리를 컨테이너의 웹 서버 디렉터리에 연결하였다.
+3. `:ro` 옵션을 적용하여 컨테이너 내부에서 마운트된 디렉터리를 읽기 전용으로 설정하였다.
+4. 호스트에서 변경한 HTML 파일이 이미지 재빌드 없이 컨테이너에 반영되는 것을 확인하였다.
+5. Docker Volume을 생성하고 컨테이너 내부에 데이터를 저장하였다.
+6. 기존 컨테이너를 삭제한 후 새로운 컨테이너에서 동일한 Volume을 연결하여 기존 데이터가 유지되는 것을 확인하였다.
+7. Bind Mount와 Docker Volume의 차이 및 데이터 영속성의 중요성을 이해하였다.
+
+### 11.6 Git 및 GitHub 버전 관리
+
+1. Git과 GitHub의 역할 및 로컬 저장소와 원격 저장소의 관계를 이해하였다.
+2. `git status` 명령어를 통해 파일의 변경 및 스테이징 상태를 확인할 수 있다.
+3. `git add` 명령어를 사용하여 변경된 파일을 Staging Area에 등록할 수 있다.
+4. `git commit` 명령어를 사용하여 변경 사항을 로컬 저장소에 기록할 수 있다.
+5. `git log`, `git show`, `git diff` 명령어를 활용하여 커밋 이력과 파일의 변경 내용을 확인할 수 있다.
+6. `git remote -v` 명령어를 통해 원격 저장소 연결 정보를 확인하였다.
+7. `git push origin main` 명령어를 사용하여 로컬 저장소의 변경 사항을 GitHub에 업로드하였다.
+
+### 11.7 Troubleshooting 및 문제 해결
+
+1. Docker Engine 연결 오류, 컨테이너 이름 중복, Dockerfile 명령어 실행 오류 등 실습 중 발생한 문제의 원인을 파악하였다.
+2. `docker ps -a`와 `docker images`를 활용하여 컨테이너와 이미지의 현재 상태를 확인할 수 있다.
+3. `docker logs` 명령어를 활용하여 Nginx 실행 로그와 웹페이지 접속 기록을 확인하였다.
+4. HTTP 404 오류의 원인이 웹사이트 아이콘 파일(favicon.ico)의 부재임을 확인하고 메인 웹페이지의 정상 작동과 구분하였다.
+5. `docker inspect` 명령어를 활용하여 컨테이너 실행 상태, 포트 매핑, 네트워크 및 IP 주소 등 상세 정보를 확인하였다.
+6. Go Template 문법을 활용하여 필요한 컨테이너 정보를 선택적으로 조회하는 방법을 학습하였다.
+7. 잘못된 IP 주소 조회 경로를 실제 네트워크 데이터 구조에 맞게 수정하여 정상적으로 IP 주소를 확인하였다.
+8. 오류 메시지 확인 → 원인 분석 → 조치 → 정상 작동 검증의 순서로 문제를 해결하는 방법을 익혔다.
+
+### 11.8 종합 실습 결과
+
+- WSL2 Ubuntu와 VS Code를 연동하여 Linux 기반 개발 작업 환경 구축
+- Docker Desktop과 WSL2 간 연동 및 Docker Engine 정상 작동 확인
+- Ubuntu 및 Hello World 컨테이너 실행을 통한 Docker 기본 환경 검증
+- Dockerfile을 활용한 사용자 정의 Nginx 이미지 제작 및 웹 서버 구축
+- 포트 매핑과 Bridge 네트워크를 통한 컨테이너 접속 및 네트워크 구조 확인
+- Bind Mount를 활용한 호스트 파일 변경 사항의 컨테이너 반영 확인
+- Docker Volume을 활용한 컨테이너 삭제 후 데이터 영속성 검증
+- Git을 활용한 변경 이력 관리 및 GitHub 원격 저장소 업로드
+- Docker 및 Git 실습 중 발생한 오류 분석과 문제 해결 경험
+
+※ Docker Compose 등 선택형 심화 실습은 진행 후 결과를 추가한다.
 
 ---
 
 ## 12. 실습 증거 자료
 
-실습 과정에서 생성한 스크린샷과 결과 자료를 아래 폴더에 저장한다.
+실습 과정에서 생성한 스크린샷과 결과 자료를 `images/` 폴더에 저장하여 개발 환경 구축부터 Docker 컨테이너 운영 및 Git 버전 관리까지의 실습 과정을 기록한다.
+
+### 12.1 폴더 구조
 
 ```text
 codisey1/
-├── README.md
+├── docker-web/
+├── docker-web-bind/
+├── images/
+│   ├── docker-bind-mount-after.png
+│   ├── docker-port-mapping.jpg
+│   └── docker-web-browser.png
 ├── hello.py
-└── images/
-    ├── terminal-practice.png
-    ├── docker-hello-world.png
-    ├── docker-container.png
-    ├── docker-web-browser.png
-    └── github-commit.png
+└── README.md
 ```
 
-※ 실제로 저장한 이미지 파일만 README에 연결한다.
+### 12.2 실습 증거 자료 목록
+
+| 구분 | 파일명 | 확인 내용 |
+|---|---|---|
+| Docker Bind Mount | `docker-bind-mount-after.png` | 호스트 파일 변경 사항의 컨테이너 반영 |
+| Docker 포트 매핑 | `docker-port-mapping.jpg` | 호스트와 컨테이너 간 포트 연결 구조 |
+| Docker 웹 서버 | `docker-web-browser.png` | Nginx 웹 서버 브라우저 접속 및 실행 확인 |
+
+※ 실제 저장된 이미지 파일만 README에 연결한다.
